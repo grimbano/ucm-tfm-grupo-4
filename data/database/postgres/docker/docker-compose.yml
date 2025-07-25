@@ -1,0 +1,19 @@
+services:
+  tfm-postgres-db:
+    image: postgres:17
+    container_name: tfm-postgres-db
+
+    env_file:
+      - .env
+
+    ports:
+      - "${DB_PORT}:5432"
+
+    environment:
+      PGPASSWORD: "${POSTGRES_PASSWORD}"
+      PGUSER: "${POSTGRES_USER}"
+      PGDATABASE: "${POSTGRES_DB}"
+
+    volumes:
+      - ./adventure_works_dw_backup.bak:${DUMP_FILE}
+      - ./entrypoint.sh:/docker-entrypoint-initdb.d/entrypoint.sh
