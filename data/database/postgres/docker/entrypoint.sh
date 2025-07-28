@@ -17,13 +17,13 @@ echo "PostgreSQL is responsive. Proceeding with restoration."
 
 echo ""
 
-echo "Restoring database '${POSTGRES_DB}' from ${DUMP_FILE} ..."
+echo "Restoring database '${PGDATABASE}' from ${DUMP_FILE} ..."
 pg_restore -Fc -v -d "$PGDATABASE" -U "$PGUSER" "${DUMP_FILE}"
 echo "Restoration completed."
 
 echo ""
 
-echo "Deleting 'public' schema if exists in '${POSTGRES_DB}' ..."
+echo "Deleting 'public' schema if exists in '${PGDATABASE}' ..."
 psql -d "$PGDATABASE" -U "$PGUSER" -c "DROP SCHEMA IF EXISTS public;"
 echo "Deleation completed."
 
