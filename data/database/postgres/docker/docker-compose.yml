@@ -10,6 +10,7 @@ services:
       - "${DB_PORT}:5432"
 
     environment:
+      PGHOST: "${POSTGRES_HOST}"
       PGPASSWORD: "${POSTGRES_PASSWORD}"
       PGUSER: "${POSTGRES_USER}"
       PGDATABASE: "${POSTGRES_DB}"
