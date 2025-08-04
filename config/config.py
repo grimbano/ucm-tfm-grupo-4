@@ -11,7 +11,7 @@ _CONFIG_PARAM_PASSWORD = 'password'
 
 
 
-def get_db_config(env_file: str = '../data/database/postgres/docker/.env') -> dict[str, str | int | None]:
+def get_pg_config(env_file: str = '../data/database/postgres/docker/.env') -> dict[str, str | int | None]:
     """
     Function to load and return the database configuration.
     """
