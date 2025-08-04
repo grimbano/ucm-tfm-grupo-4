@@ -10,4 +10,4 @@ C:\python\ucm-tfm-grupo-4\data\database\postgres\docker>docker compose down -v
 C:\python\ucm-tfm-grupo-4\data\database\postgres\docker>docker compose run --rm db-restore
 
 [give permission to entrypoint sh]
-chmod +x entrypoint.sh
+chmod +x restore_on_startup.sh
