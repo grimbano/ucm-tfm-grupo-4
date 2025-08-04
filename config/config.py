@@ -3,11 +3,11 @@ import os
 import pathlib
 import dotenv
 
-__CONFIG_PARAM_HOST = 'host'
-__CONFIG_PARAM_PORT = 'port'
-__CONFIG_PARAM_DATABASE = 'database'
-__CONFIG_PARAM_USER = 'user'
-__CONFIG_PARAM_PASSWORD = 'password'
+_CONFIG_PARAM_HOST = 'host'
+_CONFIG_PARAM_PORT = 'port'
+_CONFIG_PARAM_DATABASE = 'database'
+_CONFIG_PARAM_USER = 'user'
+_CONFIG_PARAM_PASSWORD = 'password'
 
 
 
@@ -19,18 +19,18 @@ def get_db_config(env_file: str = '../data/database/postgres/docker/.env') -> di
     dotenv.load_dotenv(dotenv.find_dotenv(env_file, raise_error_if_not_found=True))
 
     config = {
-        __CONFIG_PARAM_HOST: os.getenv('POSTGRES_HOST'),
-        __CONFIG_PARAM_PORT: os.getenv('DB_PORT', 5432),
-        __CONFIG_PARAM_DATABASE: os.getenv('POSTGRES_DB'),
-        __CONFIG_PARAM_USER: os.getenv('POSTGRES_USER'),
-        __CONFIG_PARAM_PASSWORD: os.getenv('POSTGRES_PASSWORD')
+        _CONFIG_PARAM_HOST: os.getenv('POSTGRES_HOST'),
+        _CONFIG_PARAM_PORT: os.getenv('DB_PORT', 5432),
+        _CONFIG_PARAM_DATABASE: os.getenv('POSTGRES_DB'),
+        _CONFIG_PARAM_USER: os.getenv('POSTGRES_USER'),
+        _CONFIG_PARAM_PASSWORD: os.getenv('POSTGRES_PASSWORD')
     }
 
     required_vars = [
-        __CONFIG_PARAM_HOST, 
-        __CONFIG_PARAM_DATABASE, 
-        __CONFIG_PARAM_USER, 
-        __CONFIG_PARAM_PASSWORD
+        _CONFIG_PARAM_HOST, 
+        _CONFIG_PARAM_DATABASE, 
+        _CONFIG_PARAM_USER, 
+        _CONFIG_PARAM_PASSWORD
     ]
     for var in required_vars:
         if config[var] is None:
