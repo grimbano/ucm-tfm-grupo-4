@@ -95,4 +95,4 @@ def execute_query(query: str, port: int = None) -> list[dict] | None:
     except (psycopg2.DatabaseError, Exception) as e:
         print(e)
 
-    return query_results
+    return [dict(row) for row in query_results]
