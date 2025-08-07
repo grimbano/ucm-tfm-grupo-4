@@ -1,0 +1,521 @@
+
+database: adventure_works_dw
+description: '[To be completed ...]'
+schemas:
+- name: sales
+  description: '[To be completed ...]'
+  tables:
+  - name: dim_customer
+    description: '[To be completed ...]'
+    columns:
+    - name: customer_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: geography_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.dim_customer.geography_key
+
+    - name: customer_full_name
+      description: '[To be completed ...]'
+      data_type: TEXT
+
+    - name: birth_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: marital_status
+      description: '[To be completed ...]'
+      data_type: BPCHAR(1)
+
+    - name: gender
+      description: '[To be completed ...]'
+      data_type: VARCHAR(1)
+
+    - name: yearly_income
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: total_children
+      description: '[To be completed ...]'
+      data_type: INT2
+
+    - name: number_children_at_home
+      description: '[To be completed ...]'
+      data_type: INT2
+
+    - name: english_education
+      description: '[To be completed ...]'
+      data_type: VARCHAR(40)
+
+    - name: spanish_education
+      description: '[To be completed ...]'
+      data_type: VARCHAR(40)
+
+    - name: english_occupation
+      description: '[To be completed ...]'
+      data_type: VARCHAR(100)
+
+    - name: spanish_occupation
+      description: '[To be completed ...]'
+      data_type: VARCHAR(100)
+
+    - name: house_owner
+      description: '[To be completed ...]'
+      data_type: BOOL
+
+    - name: number_cars_owned
+      description: '[To be completed ...]'
+      data_type: INT2
+
+    - name: commute_distance
+      description: '[To be completed ...]'
+      data_type: VARCHAR(15)
+
+  - name: dim_geography
+    description: '[To be completed ...]'
+    columns:
+    - name: geography_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: city
+      description: '[To be completed ...]'
+      data_type: VARCHAR(30)
+
+    - name: state_province_code
+      description: '[To be completed ...]'
+      data_type: VARCHAR(3)
+
+    - name: state_province_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: country_region_code
+      description: '[To be completed ...]'
+      data_type: VARCHAR(3)
+
+    - name: english_country_region_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: spanish_country_region_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: postal_code
+      description: '[To be completed ...]'
+      data_type: VARCHAR(15)
+
+    - name: sales_territory_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.dim_geography.sales_territory_key
+
+  - name: dim_product
+    description: '[To be completed ...]'
+    columns:
+    - name: product_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: weight_unit_measure_code
+      description: '[To be completed ...]'
+      data_type: BPCHAR(3)
+
+    - name: size_unit_measure_code
+      description: '[To be completed ...]'
+      data_type: BPCHAR(3)
+
+    - name: english_product_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: spanish_product_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: standard_cost
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: finished_goods_flag
+      description: '[To be completed ...]'
+      data_type: BOOL
+
+    - name: color
+      description: '[To be completed ...]'
+      data_type: VARCHAR(15)
+
+    - name: safety_stock_level
+      description: '[To be completed ...]'
+      data_type: INT2
+
+    - name: reorder_point
+      description: '[To be completed ...]'
+      data_type: INT2
+
+    - name: list_price
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: size
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: size_range
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: weight
+      description: '[To be completed ...]'
+      data_type: FLOAT8
+
+    - name: days_to_manufacture
+      description: '[To be completed ...]'
+      data_type: INT4
+
+    - name: product_line
+      description: '[To be completed ...]'
+      data_type: BPCHAR(2)
+
+    - name: dealer_price
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: class
+      description: '[To be completed ...]'
+      data_type: BPCHAR(2)
+
+    - name: style
+      description: '[To be completed ...]'
+      data_type: BPCHAR(2)
+
+    - name: model_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: english_description
+      description: '[To be completed ...]'
+      data_type: VARCHAR(400)
+
+    - name: start_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: end_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: active
+      description: '[To be completed ...]'
+      data_type: BOOL
+
+    - name: english_product_subcategory_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: spanish_product_subcategory_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: english_product_category_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: spanish_product_category_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+  - name: dim_promotion
+    description: '[To be completed ...]'
+    columns:
+    - name: promotion_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: english_promotion_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(255)
+
+    - name: spanish_promotion_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(255)
+
+    - name: discount_pct
+      description: '[To be completed ...]'
+      data_type: FLOAT8
+
+    - name: english_promotion_type
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: spanish_promotion_type
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: english_promotion_category
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: spanish_promotion_category
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: start_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: end_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: min_qty
+      description: '[To be completed ...]'
+      data_type: INT4
+
+    - name: max_qty
+      description: '[To be completed ...]'
+      data_type: INT4
+
+  - name: dim_reseller
+    description: '[To be completed ...]'
+    columns:
+    - name: reseller_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: geography_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.dim_reseller.geography_key
+
+    - name: business_type
+      description: '[To be completed ...]'
+      data_type: VARCHAR(20)
+
+    - name: reseller_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: number_employees
+      description: '[To be completed ...]'
+      data_type: INT4
+
+    - name: order_frequency
+      description: '[To be completed ...]'
+      data_type: BPCHAR(1)
+
+    - name: first_order_year
+      description: '[To be completed ...]'
+      data_type: INT4
+
+    - name: last_order_year
+      description: '[To be completed ...]'
+      data_type: INT4
+
+    - name: product_line
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: year_opened
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+  - name: dim_sales_person
+    description: '[To be completed ...]'
+    columns:
+    - name: employee_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: employee_full_name
+      description: '[To be completed ...]'
+      data_type: TEXT
+
+    - name: title
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: gender
+      description: '[To be completed ...]'
+      data_type: BPCHAR(1)
+
+    - name: sales_person_flag
+      description: '[To be completed ...]'
+      data_type: BOOL
+
+  - name: dim_sales_reason
+    description: '[To be completed ...]'
+    columns:
+    - name: sales_reason_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: sales_reason_name
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: sales_reason_reason_type
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+  - name: dim_sales_territory
+    description: '[To be completed ...]'
+    columns:
+    - name: sales_territory_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+
+    - name: sales_territory_region
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: sales_territory_country
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+    - name: sales_territory_group
+      description: '[To be completed ...]'
+      data_type: VARCHAR(50)
+
+  - name: fact_internet_sales_reason
+    description: '[To be completed ...]'
+    columns:
+    - name: sales_order_number
+      description: '[To be completed ...]'
+      data_type: VARCHAR(20)
+      is_primary_key: true
+      is_foreign_key: true
+      reference: sales.fact_internet_sales_reason.sales_order_number
+
+    - name: sales_order_line_number
+      description: '[To be completed ...]'
+      data_type: INT2
+      is_primary_key: true
+      is_foreign_key: true
+      reference: sales.fact_internet_sales_reason.sales_order_line_number
+
+    - name: sales_reason_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_primary_key: true
+      is_foreign_key: true
+      reference: sales.fact_internet_sales_reason.sales_reason_key
+
+  - name: fact_sales
+    description: '[To be completed ...]'
+    columns:
+    - name: product_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.fact_sales.product_key
+
+    - name: reseller_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.fact_sales.reseller_key
+
+    - name: employee_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.fact_sales.employee_key
+
+    - name: customer_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.fact_sales.customer_key
+
+    - name: promotion_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.fact_sales.promotion_key
+
+    - name: sales_territory_key
+      description: '[To be completed ...]'
+      data_type: INT4
+      is_foreign_key: true
+      reference: sales.fact_sales.sales_territory_key
+
+    - name: sales_order_number
+      description: '[To be completed ...]'
+      data_type: VARCHAR(20)
+      is_primary_key: true
+
+    - name: sales_order_line_number
+      description: '[To be completed ...]'
+      data_type: INT2
+      is_primary_key: true
+
+    - name: order_quantity
+      description: '[To be completed ...]'
+      data_type: INT2
+
+    - name: unit_price
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: extended_amount
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: unit_price_discount_pct
+      description: '[To be completed ...]'
+      data_type: FLOAT8
+
+    - name: discount_amount
+      description: '[To be completed ...]'
+      data_type: FLOAT8
+
+    - name: product_standard_cost
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: total_product_cost
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: sales_amount
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: tax_amt
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: freight
+      description: '[To be completed ...]'
+      data_type: NUMERIC
+
+    - name: order_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: due_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: ship_date
+      description: '[To be completed ...]'
+      data_type: DATE
+
+    - name: sale_source
+      description: '[To be completed ...]'
+      data_type: TEXT
