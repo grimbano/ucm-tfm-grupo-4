@@ -14,8 +14,7 @@ SELECT
             true
         FROM
             information_schema.table_constraints AS p
-        INNER JOIN
-            information_schema.key_column_usage AS k USING (constraint_catalog, constraint_schema, constraint_name)
+            INNER JOIN information_schema.key_column_usage AS k USING (constraint_catalog, constraint_schema, constraint_name)
         WHERE
             p.table_schema = c.table_schema
             AND p.table_name = c.table_name
@@ -27,8 +26,7 @@ SELECT
             true
         FROM
             information_schema.table_constraints AS f
-        INNER JOIN
-            information_schema.key_column_usage AS k USING (constraint_catalog, constraint_schema, constraint_name)
+            INNER JOIN information_schema.key_column_usage AS k USING (constraint_catalog, constraint_schema, constraint_name)
         WHERE
             f.table_schema = c.table_schema
             AND f.table_name = c.table_name
@@ -39,27 +37,28 @@ SELECT
         SELECT
             refs.table_schema || '.' || refs.table_name || '.' || refs.column_name
         FROM
-            information_schema.table_constraints AS f
-        INNER JOIN
-            information_schema.key_column_usage AS k USING (constraint_catalog, constraint_schema, constraint_name)
-        INNER JOIN
-            information_schema.referential_constraints AS r USING (constraint_catalog, constraint_schema, constraint_name)
-        INNER JOIN
-            information_schema.key_column_usage AS refs USING (constraint_catalog, constraint_schema, constraint_name)
+            information_schema.table_constraints AS t
+            INNER JOIN information_schema.key_column_usage AS k USING (constraint_catalog, constraint_schema, constraint_name)
+            INNER JOIN information_schema.referential_constraints AS r USING (constraint_catalog, constraint_schema, constraint_name)
+            INNER JOIN information_schema.key_column_usage AS refs ON (
+                r.constraint_catalog = refs.constraint_catalog
+                AND r.constraint_schema = refs.constraint_schema
+                AND r.unique_constraint_name = refs.constraint_name
+                AND k.column_name = refs.column_name
+            )
         WHERE
-            f.table_schema = c.table_schema
-            AND f.table_name = c.table_name
+            t.table_schema = c.table_schema
+            AND t.table_name = c.table_name
             AND k.column_name = c.column_name
-            AND refs.column_name = c.column_name
-            AND f.constraint_type = 'FOREIGN KEY'
+            AND t.constraint_type = 'FOREIGN KEY'
     ) AS target
 
 FROM 
     information_schema.columns AS c
 
 WHERE
-    c.table_catalog IN ([db_names_list])
-    AND c.table_schema IN ([schema_names_list])
+    c.table_catalog IN ('adventure_works_dw')
+    AND c.table_schema IN ('sales')
 
 ORDER BY
     c.table_catalog

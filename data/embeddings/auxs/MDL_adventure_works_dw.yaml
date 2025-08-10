@@ -17,7 +17,7 @@ schemas:
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.dim_customer.geography_key
+      reference: sales.dim_geography.geography_key
 
     - name: customer_full_name
       description: '[To be completed ...]'
@@ -115,7 +115,7 @@ schemas:
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.dim_geography.sales_territory_key
+      reference: sales.dim_sales_territory.sales_territory_key
 
   - name: dim_product
     description: '[To be completed ...]'
@@ -297,7 +297,7 @@ schemas:
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.dim_reseller.geography_key
+      reference: sales.dim_geography.geography_key
 
     - name: business_type
       description: '[To be completed ...]'
@@ -399,21 +399,21 @@ schemas:
       data_type: VARCHAR(20)
       is_primary_key: true
       is_foreign_key: true
-      reference: sales.fact_internet_sales_reason.sales_order_number
+      reference: sales.fact_sales.sales_order_number
 
     - name: sales_order_line_number
       description: '[To be completed ...]'
       data_type: INT2
       is_primary_key: true
       is_foreign_key: true
-      reference: sales.fact_internet_sales_reason.sales_order_line_number
+      reference: sales.fact_sales.sales_order_line_number
 
     - name: sales_reason_key
       description: '[To be completed ...]'
       data_type: INT4
       is_primary_key: true
       is_foreign_key: true
-      reference: sales.fact_internet_sales_reason.sales_reason_key
+      reference: sales.dim_sales_reason.sales_reason_key
 
   - name: fact_sales
     description: '[To be completed ...]'
@@ -422,37 +422,37 @@ schemas:
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.fact_sales.product_key
+      reference: sales.dim_product.product_key
 
     - name: reseller_key
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.fact_sales.reseller_key
+      reference: sales.dim_reseller.reseller_key
 
     - name: employee_key
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.fact_sales.employee_key
+      reference: sales.dim_sales_person.employee_key
 
     - name: customer_key
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.fact_sales.customer_key
+      reference: sales.dim_customer.customer_key
 
     - name: promotion_key
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.fact_sales.promotion_key
+      reference: sales.dim_promotion.promotion_key
 
     - name: sales_territory_key
       description: '[To be completed ...]'
       data_type: INT4
       is_foreign_key: true
-      reference: sales.fact_sales.sales_territory_key
+      reference: sales.dim_sales_territory.sales_territory_key
 
     - name: sales_order_number
       description: '[To be completed ...]'
