@@ -57,8 +57,8 @@ FROM
     information_schema.columns AS c
 
 WHERE
-    c.table_catalog IN ('adventure_works_dw')
-    AND c.table_schema IN ('sales')
+    c.table_catalog IN ([db_names_list])
+    AND c.table_schema IN ([schema_names_list])
 
 ORDER BY
     c.table_catalog
