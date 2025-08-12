@@ -1,0 +1,458 @@
+[
+  {
+    "user_query": "Dime el nombre de cada producto, su precio de lista, el coste estándar, su categoría y subcategoría en español. Adicionalmente, genera una columna con el nombre 'product_price_tier' que clasifique el producto en 'Premium' si el precio de lista es mayor o igual a 1000, 'Estándar' si está entre 200 y 999.99, y 'Económico' para el resto. Ordena el listado por categoría y subcategoría.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  list_price,\n  standard_cost,\n  spanish_product_category_name AS product_category,\n  spanish_product_subcategory_name AS product_subcategory,\n  CASE\n    WHEN list_price >= 1000 THEN 'Premium'\n    WHEN list_price >= 200 AND list_price < 1000 THEN 'Estándar'\n    ELSE 'Económico'\n  END AS product_price_tier\nFROM\n  sales.dim_product\nORDER BY\n  product_category,\n  product_subcategory;"
+  },
+  {
+    "user_query": "Calculate the average shipping time, delivery time, and total order processing time in days for all sales.",
+    "SQL_query": "SELECT\n  AVG(DATE_PART('day', ship_date - order_date)) AS avg_shipping_time_days,\n  AVG(DATE_PART('day', due_date - ship_date)) AS avg_delivery_time_days,\n  AVG(DATE_PART('day', due_date - order_date)) AS avg_total_order_processing_time_days\nFROM\n  sales.fact_sales;"
+  },
+  {
+    "user_query": "Dame las ventas totales ('Net Sales') por categoría de producto para las ventas B2C (online) del año actual. Muestra también el margen bruto ('Gross Margin') y el porcentaje de margen bruto ('Gross Margin Percentage') de cada categoría. Ordena el resultado de mayor a menor venta neta.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category,\n  SUM(fs.sales_amount) AS total_net_sales,\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin,\n  (SUM(fs.sales_amount - fs.total_product_cost) / NULLIF(SUM(fs.sales_amount), 0)) * 100 AS gross_margin_percentage\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\n  AND fs.sale_source = 'internet_sales'\nGROUP BY\n  product_category\nORDER BY\n  total_net_sales DESC;"
+  },
+  {
+    "user_query": "Calculate the total quantity sold for each product line and display it along with the product line name in English. Show only the product lines with 'R' or 'M' as their code.",
+    "SQL_query": "SELECT\n  dp.product_line,\n  SUM(fs.order_quantity) AS total_quantity_sold\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  dp.product_line IN ('R', 'M')\nGROUP BY\n  dp.product_line\nORDER BY\n  total_quantity_sold DESC;"
+  },
+  {
+    "user_query": "Calcula el valor promedio por orden (AOV) para las ventas realizadas a distribuidores ('reseller_sales').",
+    "SQL_query": "SELECT\n  SUM(sales_amount) / COUNT(DISTINCT sales_order_number) AS average_order_value\nFROM\n  sales.fact_sales\nWHERE\n  sale_source = 'reseller_sales';"
+  },
+  {
+    "user_query": "Obtén la tasa de descuento promedio ('Average Discount Rate') aplicada en todas las ventas, expresada como un porcentaje.",
+    "SQL_query": "SELECT\n  (SUM(discount_amount) / NULLIF(SUM(extended_amount), 0)) * 100 AS average_discount_rate_pct\nFROM\n  sales.fact_sales;"
+  },
+  {
+    "user_query": "Show the total sales amount for each reseller, along with their business type and number of employees. Include only resellers that have sales. Order the results by total sales in descending order.",
+    "SQL_query": "SELECT\n  dr.reseller_name,\n  dr.business_type,\n  dr.number_employees,\n  SUM(fs.sales_amount) AS total_sales_by_reseller\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_reseller dr ON fs.reseller_key = dr.reseller_key\nWHERE\n  fs.sale_source = 'reseller_sales'\nGROUP BY\n  dr.reseller_name, dr.business_type, dr.number_employees\nORDER BY\n  total_sales_by_reseller DESC;"
+  },
+  {
+    "user_query": "Enumera los 10 productos más vendidos en términos de cantidad de unidades ('Quantity Sold') del último año. Muestra el nombre del producto en español y la cantidad vendida.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_name, dp.english_product_name) AS product_name,\n  SUM(fs.order_quantity) AS total_quantity_sold\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\nGROUP BY\n  product_name\nORDER BY\n  total_quantity_sold DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "Calculate the gross margin and gross margin percentage for sales in the 'North America' sales territory group.",
+    "SQL_query": "SELECT\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin,\n  (SUM(fs.sales_amount - fs.total_product_cost) / NULLIF(SUM(fs.sales_amount), 0)) * 100 AS gross_margin_percentage\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nWHERE\n  dst.sales_territory_group = 'North America';"
+  },
+  {
+    "user_query": "Muestra un listado de clientes y su segmento de ingresos ('customer_income_segment') y de estilo de vida ('customer_lifestyle_segment'). Utiliza el `yearly_income` para la segmentación de ingresos y los campos `house_owner` y `number_children_at_home` para el segmento de estilo de vida, según las reglas de negocio. Limita el resultado a 20 filas.",
+    "SQL_query": "SELECT\n  customer_full_name,\n  yearly_income,\n  house_owner,\n  number_children_at_home,\n  CASE\n    WHEN yearly_income >= 100000 THEN 'Alto Valor'\n    WHEN yearly_income >= 50000 AND yearly_income < 100000 THEN 'Valor Medio'\n    ELSE 'Valor Básico'\n  END AS customer_income_segment,\n  CASE\n    WHEN house_owner = TRUE AND number_children_at_home > 0 THEN 'Familia Propietaria'\n    WHEN house_owner = TRUE AND number_children_at_home = 0 THEN 'Propietario Sin Hijos'\n    WHEN house_owner = FALSE AND number_children_at_home > 0 THEN 'Familia Alquilada'\n    ELSE 'Alquilado Sin Hijos'\n  END AS customer_lifestyle_segment\nFROM\n  sales.dim_customer\nLIMIT 20;"
+  },
+  {
+    "user_query": "List the top 5 sales persons by total sales amount for B2B sales ('reseller_sales') this year. Display their full name and the total sales amount. Order the results by sales in descending order.",
+    "SQL_query": "SELECT\n  dsp.employee_full_name,\n  SUM(fs.sales_amount) AS total_sales_by_salesperson\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_person dsp ON fs.employee_key = dsp.employee_key\nWHERE\n  fs.sale_source = 'reseller_sales'\n  AND EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY\n  dsp.employee_full_name\nORDER BY\n  total_sales_by_salesperson DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "Get the total sales and total product cost for all sales with a promotion name in Spanish. Also, show the promotion name.",
+    "SQL_query": "SELECT\n  dp.spanish_promotion_name AS promotion_name,\n  SUM(fs.sales_amount) AS total_sales_amount,\n  SUM(fs.total_product_cost) AS total_product_cost\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_promotion dp ON fs.promotion_key = dp.promotion_key\nGROUP BY\n  promotion_name\nORDER BY\n  total_sales_amount DESC;"
+  },
+  {
+    "user_query": "Calcula el volumen de ventas por cliente para los clientes con un `yearly_income` de 'Alto Valor', según las reglas de negocio. Muestra el nombre completo del cliente y sus ventas totales. Filtra por ventas B2C ('internet_sales').",
+    "SQL_query": "SELECT\n  dc.customer_full_name,\n  SUM(fs.sales_amount) AS total_sales_by_customer\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_customer dc ON fs.customer_key = dc.customer_key\nWHERE\n  fs.sale_source = 'internet_sales'\n  AND dc.yearly_income >= 100000\nGROUP BY\n  dc.customer_full_name\nORDER BY\n  total_sales_by_customer DESC;"
+  },
+  {
+    "user_query": "List all products that have a list price between 500 and 700. Show their name in Spanish, list price, and their color. Exclude products with a 'color' of 'NA'.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  list_price,\n  color\nFROM\n  sales.dim_product\nWHERE\n  list_price BETWEEN 500 AND 700\n  AND color != 'NA';"
+  },
+  {
+    "user_query": "Compara las ventas totales ('sales_amount') del año actual con el año pasado, desglosadas por mes. Incluye el nombre del mes, las ventas del año actual, las del año pasado, la diferencia y el porcentaje de cambio.",
+    "SQL_query": "WITH CurrentYearSales AS (\n    SELECT\n        EXTRACT(MONTH FROM order_date) AS sales_month,\n        SUM(sales_amount) AS current_year_sales\n    FROM sales.fact_sales\n    WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\n    GROUP BY 1\n),\nLastYearSales AS (\n    SELECT\n        EXTRACT(MONTH FROM order_date) AS sales_month,\n        SUM(sales_amount) AS last_year_sales\n    FROM sales.fact_sales\n    WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\n    GROUP BY 1\n)\nSELECT\n    COALESCE(CY.sales_month, LY.sales_month) AS sales_month,\n    COALESCE(CY.current_year_sales, 0) AS current_year_sales,\n    COALESCE(LY.last_year_sales, 0) AS last_year_sales,\n    (COALESCE(CY.current_year_sales, 0) - COALESCE(LY.last_year_sales, 0)) AS sales_difference,\n    (COALESCE(CY.current_year_sales, 0) - COALESCE(LY.last_year_sales, 0)) / NULLIF(COALESCE(LY.last_year_sales, 0), 0) AS percentage_change\nFROM CurrentYearSales CY\nFULL OUTER JOIN LastYearSales LY ON CY.sales_month = LY.sales_month\nORDER BY sales_month;"
+  },
+  {
+    "user_query": "Calculate the total sales amount (Net Sales), the total quantity sold, and the total cost of goods sold (COGS) for the current year-to-date (YTD) period.",
+    "SQL_query": "SELECT\n  SUM(sales_amount) AS total_net_sales_ytd,\n  SUM(order_quantity) AS total_quantity_sold_ytd,\n  SUM(total_product_cost) AS total_cogs_ytd\nFROM\n  sales.fact_sales\nWHERE\n  order_date BETWEEN DATE_TRUNC('year', CURRENT_DATE) AND CURRENT_DATE;"
+  },
+  {
+    "user_query": "Dame un listado de los motivos de venta más comunes para las ventas B2C ('internet_sales'). Muestra el nombre del motivo de venta y el recuento de veces que aparece en las ventas.",
+    "SQL_query": "SELECT\n  dsr.sales_reason_name,\n  COUNT(fisr.sales_reason_key) AS reason_count\nFROM\n  sales.fact_internet_sales_reason fisr\nJOIN\n  sales.dim_sales_reason dsr ON fisr.sales_reason_key = dsr.sales_reason_key\nJOIN\n  sales.fact_sales fs ON fisr.sales_order_number = fs.sales_order_number AND fisr.sales_order_line_number = fs.sales_order_line_number\nWHERE\n  fs.sale_source = 'internet_sales'\nGROUP BY\n  dsr.sales_reason_name\nORDER BY\n  reason_count DESC;"
+  },
+  {
+    "user_query": "For each sales territory group, get the total sales amount and the total number of orders. Display the territory group name and sort by total sales descending.",
+    "SQL_query": "SELECT\n  dst.sales_territory_group,\n  SUM(fs.sales_amount) AS total_sales,\n  COUNT(DISTINCT fs.sales_order_number) AS total_orders\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nGROUP BY\n  dst.sales_territory_group\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "Muestra el nombre completo de los clientes que son propietarios ('house_owner' es True) y que tienen más de 2 hijos en casa ('number_children_at_home').",
+    "SQL_query": "SELECT\n  customer_full_name\nFROM\n  sales.dim_customer\nWHERE\n  house_owner = TRUE\n  AND number_children_at_home > 2;"
+  },
+  {
+    "user_query": "Get the total sales for each product category for the last year. Display the product category name in Spanish, if available, otherwise in English. Order the results by total sales in descending order.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\nGROUP BY\n  product_category_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "Para cada promoción, calcula la cantidad total de unidades vendidas y el importe de descuento total. Muestra el nombre de la promoción en español, su tipo y categoría. Limita el resultado a las 10 promociones con el mayor descuento total.",
+    "SQL_query": "SELECT\n  dp.spanish_promotion_name AS promotion_name,\n  dp.spanish_promotion_type AS promotion_type,\n  dp.spanish_promotion_category AS promotion_category,\n  SUM(fs.order_quantity) AS total_quantity_sold,\n  SUM(fs.discount_amount) AS total_discount_amount\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_promotion dp ON fs.promotion_key = dp.promotion_key\nGROUP BY\n  dp.spanish_promotion_name, dp.spanish_promotion_type, dp.spanish_promotion_category\nORDER BY\n  total_discount_amount DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "For each sales order, calculate the shipping time, delivery time, and total order processing time in days. Show the sales order number and the calculated times. Display results for orders from the first quarter of the current year.",
+    "SQL_query": "SELECT\n  sales_order_number,\n  DATE_PART('day', ship_date - order_date) AS shipping_time_days,\n  DATE_PART('day', due_date - ship_date) AS delivery_time_days,\n  DATE_PART('day', due_date - order_date) AS total_order_processing_time_days\nFROM\n  sales.fact_sales\nWHERE\n  EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\n  AND EXTRACT(QUARTER FROM order_date) = 1;"
+  },
+  {
+    "user_query": "Dime el nombre de cada producto, su precio de lista, el coste estándar, su categoría y subcategoría en español. Adicionalmente, genera una columna con el nombre 'product_price_tier' que clasifique el producto en 'Premium' si el precio de lista es mayor o igual a 1000, 'Estándar' si está entre 200 y 999.99, y 'Económico' para el resto. Ordena el listado por categoría y subcategoría.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  list_price,\n  standard_cost,\n  spanish_product_category_name AS product_category,\n  spanish_product_subcategory_name AS product_subcategory,\n  CASE\n    WHEN list_price >= 1000 THEN 'Premium'\n    WHEN list_price >= 200 AND list_price < 1000 THEN 'Estándar'\n    ELSE 'Económico'\n  END AS product_price_tier\nFROM\n  sales.dim_product\nORDER BY\n  product_category,\n  product_subcategory;"
+  },
+  {
+    "user_query": "Calculate the average shipping time, delivery time, and total order processing time in days for all sales.",
+    "SQL_query": "SELECT\n  AVG(DATE_PART('day', ship_date - order_date)) AS avg_shipping_time_days,\n  AVG(DATE_PART('day', due_date - ship_date)) AS avg_delivery_time_days,\n  AVG(DATE_PART('day', due_date - order_date)) AS avg_total_order_processing_time_days\nFROM\n  sales.fact_sales;"
+  },
+  {
+    "user_query": "Dame las ventas totales ('Net Sales') por categoría de producto para las ventas B2C (online) del año actual. Muestra también el margen bruto ('Gross Margin') y el porcentaje de margen bruto ('Gross Margin Percentage') de cada categoría. Ordena el resultado de mayor a menor venta neta.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category,\n  SUM(fs.sales_amount) AS total_net_sales,\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin,\n  (SUM(fs.sales_amount - fs.total_product_cost) / NULLIF(SUM(fs.sales_amount), 0)) * 100 AS gross_margin_percentage\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\n  AND fs.sale_source = 'internet_sales'\nGROUP BY\n  product_category\nORDER BY\n  total_net_sales DESC;"
+  },
+  {
+    "user_query": "Calculate the total quantity sold for each product line and display it along with the product line name in English. Show only the product lines with 'R' or 'M' as their code.",
+    "SQL_query": "SELECT\n  dp.product_line,\n  SUM(fs.order_quantity) AS total_quantity_sold\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  dp.product_line IN ('R', 'M')\nGROUP BY\n  dp.product_line\nORDER BY\n  total_quantity_sold DESC;"
+  },
+  {
+    "user_query": "Calcula el valor promedio por orden (AOV) para las ventas realizadas a distribuidores ('reseller_sales').",
+    "SQL_query": "SELECT\n  SUM(sales_amount) / COUNT(DISTINCT sales_order_number) AS average_order_value\nFROM\n  sales.fact_sales\nWHERE\n  sale_source = 'reseller_sales';"
+  },
+  {
+    "user_query": "Obtén la tasa de descuento promedio ('Average Discount Rate') aplicada en todas las ventas, expresada como un porcentaje.",
+    "SQL_query": "SELECT\n  (SUM(discount_amount) / NULLIF(SUM(extended_amount), 0)) * 100 AS average_discount_rate_pct\nFROM\n  sales.fact_sales;"
+  },
+  {
+    "user_query": "Show the total sales amount for each reseller, along with their business type and number of employees. Include only resellers that have sales. Order the results by total sales in descending order.",
+    "SQL_query": "SELECT\n  dr.reseller_name,\n  dr.business_type,\n  dr.number_employees,\n  SUM(fs.sales_amount) AS total_sales_by_reseller\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_reseller dr ON fs.reseller_key = dr.reseller_key\nWHERE\n  fs.sale_source = 'reseller_sales'\nGROUP BY\n  dr.reseller_name, dr.business_type, dr.number_employees\nORDER BY\n  total_sales_by_reseller DESC;"
+  },
+  {
+    "user_query": "Enumera los 10 productos más vendidos en términos de cantidad de unidades ('Quantity Sold') del último año. Muestra el nombre del producto en español y la cantidad vendida.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_name, english_product_name) AS product_name,\n  SUM(fs.order_quantity) AS total_quantity_sold\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\nGROUP BY\n  product_name\nORDER BY\n  total_quantity_sold DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "Calculate the gross margin and gross margin percentage for sales in the 'North America' sales territory group.",
+    "SQL_query": "SELECT\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin,\n  (SUM(fs.sales_amount - fs.total_product_cost) / NULLIF(SUM(fs.sales_amount), 0)) * 100 AS gross_margin_percentage\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nWHERE\n  dst.sales_territory_group = 'North America';"
+  },
+  {
+    "user_query": "Muestra un listado de clientes y su segmento de ingresos ('customer_income_segment') y de estilo de vida ('customer_lifestyle_segment'). Utiliza el `yearly_income` para la segmentación de ingresos y los campos `house_owner` y `number_children_at_home` para el segmento de estilo de vida, según las reglas de negocio. Limita el resultado a 20 filas.",
+    "SQL_query": "SELECT\n  customer_full_name,\n  yearly_income,\n  house_owner,\n  number_children_at_home,\n  CASE\n    WHEN yearly_income >= 100000 THEN 'Alto Valor'\n    WHEN yearly_income >= 50000 AND yearly_income < 100000 THEN 'Valor Medio'\n    ELSE 'Valor Básico'\n  END AS customer_income_segment,\n  CASE\n    WHEN house_owner = TRUE AND number_children_at_home > 0 THEN 'Familia Propietaria'\n    WHEN house_owner = TRUE AND number_children_at_home = 0 THEN 'Propietario Sin Hijos'\n    WHEN house_owner = FALSE AND number_children_at_home > 0 THEN 'Familia Alquilada'\n    ELSE 'Alquilado Sin Hijos'\n  END AS customer_lifestyle_segment\nFROM\n  sales.dim_customer\nLIMIT 20;"
+  },
+  {
+    "user_query": "List the top 5 sales persons by total sales amount for B2B sales ('reseller_sales') this year. Display their full name and the total sales amount. Order the results by sales in descending order.",
+    "SQL_query": "SELECT\n  dsp.employee_full_name,\n  SUM(fs.sales_amount) AS total_sales_by_salesperson\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_person dsp ON fs.employee_key = dsp.employee_key\nWHERE\n  fs.sale_source = 'reseller_sales'\n  AND EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY\n  dsp.employee_full_name\nORDER BY\n  total_sales_by_salesperson DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "Get the total sales and total product cost for all sales with a promotion name in Spanish. Also, show the promotion name.",
+    "SQL_query": "SELECT\n  dp.spanish_promotion_name AS promotion_name,\n  SUM(fs.sales_amount) AS total_sales_amount,\n  SUM(fs.total_product_cost) AS total_product_cost\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_promotion dp ON fs.promotion_key = dp.promotion_key\nGROUP BY\n  promotion_name\nORDER BY\n  total_sales_amount DESC;"
+  },
+  {
+    "user_query": "Calcula el volumen de ventas por cliente para los clientes con un `yearly_income` de 'Alto Valor', según las reglas de negocio. Muestra el nombre completo del cliente y sus ventas totales. Filtra por ventas B2C ('internet_sales').",
+    "SQL_query": "SELECT\n  dc.customer_full_name,\n  SUM(fs.sales_amount) AS total_sales_by_customer\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_customer dc ON fs.customer_key = dc.customer_key\nWHERE\n  fs.sale_source = 'internet_sales'\n  AND dc.yearly_income >= 100000\nGROUP BY\n  dc.customer_full_name\nORDER BY\n  total_sales_by_customer DESC;"
+  },
+  {
+    "user_query": "List all products that have a list price between 500 and 700. Show their name in Spanish, list price, and their color. Exclude products with a 'color' of 'NA'.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  list_price,\n  color\nFROM\n  sales.dim_product\nWHERE\n  list_price BETWEEN 500 AND 700\n  AND color != 'NA';"
+  },
+  {
+    "user_query": "Compara las ventas totales ('sales_amount') del año actual con el año pasado, desglosadas por mes. Incluye el nombre del mes, las ventas del año actual, las del año pasado, la diferencia y el porcentaje de cambio.",
+    "SQL_query": "WITH CurrentYearSales AS (\n    SELECT\n        EXTRACT(MONTH FROM order_date) AS sales_month,\n        SUM(sales_amount) AS current_year_sales\n    FROM sales.fact_sales\n    WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\n    GROUP BY 1\n),\nLastYearSales AS (\n    SELECT\n        EXTRACT(MONTH FROM order_date) AS sales_month,\n        SUM(sales_amount) AS last_year_sales\n    FROM sales.fact_sales\n    WHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\n    GROUP BY 1\n)\nSELECT\n    COALESCE(CY.sales_month, LY.sales_month) AS sales_month,\n    COALESCE(CY.current_year_sales, 0) AS current_year_sales,\n    COALESCE(LY.last_year_sales, 0) AS last_year_sales,\n    (COALESCE(CY.current_year_sales, 0) - COALESCE(LY.last_year_sales, 0)) AS sales_difference,\n    (COALESCE(CY.current_year_sales, 0) - COALESCE(LY.last_year_sales, 0)) / NULLIF(COALESCE(LY.last_year_sales, 0), 0) AS percentage_change\nFROM CurrentYearSales CY\nFULL OUTER JOIN LastYearSales LY ON CY.sales_month = LY.sales_month\nORDER BY sales_month;"
+  },
+  {
+    "user_query": "Calculate the total sales amount (Net Sales), the total quantity sold, and the total cost of goods sold (COGS) for the current year-to-date (YTD) period.",
+    "SQL_query": "SELECT\n  SUM(sales_amount) AS total_net_sales_ytd,\n  SUM(order_quantity) AS total_quantity_sold_ytd,\n  SUM(total_product_cost) AS total_cogs_ytd\nFROM\n  sales.fact_sales\nWHERE\n  order_date BETWEEN DATE_TRUNC('year', CURRENT_DATE) AND CURRENT_DATE;"
+  },
+  {
+    "user_query": "Dame un listado de los motivos de venta más comunes para las ventas B2C ('internet_sales'). Muestra el nombre del motivo de venta y el recuento de veces que aparece en las ventas.",
+    "SQL_query": "SELECT\n  dsr.sales_reason_name,\n  COUNT(fisr.sales_reason_key) AS reason_count\nFROM\n  sales.fact_internet_sales_reason fisr\nJOIN\n  sales.dim_sales_reason dsr ON fisr.sales_reason_key = dsr.sales_reason_key\nJOIN\n  sales.fact_sales fs ON fisr.sales_order_number = fs.sales_order_number AND fisr.sales_order_line_number = fs.sales_order_line_number\nWHERE\n  fs.sale_source = 'internet_sales'\nGROUP BY\n  dsr.sales_reason_name\nORDER BY\n  reason_count DESC;"
+  },
+  {
+    "user_query": "For each sales territory group, get the total sales amount and the total number of orders. Display the territory group name and sort by total sales descending.",
+    "SQL_query": "SELECT\n  dst.sales_territory_group,\n  SUM(fs.sales_amount) AS total_sales,\n  COUNT(DISTINCT fs.sales_order_number) AS total_orders\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nGROUP BY\n  dst.sales_territory_group\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "Muestra el nombre completo de los clientes que son propietarios ('house_owner' es True) y que tienen más de 2 hijos en casa ('number_children_at_home').",
+    "SQL_query": "SELECT\n  customer_full_name\nFROM\n  sales.dim_customer\nWHERE\n  house_owner = TRUE\n  AND number_children_at_home > 2;"
+  },
+  {
+    "user_query": "Get the total sales for each product category for the last year. Display the product category name in Spanish, if available, otherwise in English. Order the results by total sales in descending order.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\nGROUP BY\n  product_category_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "Para cada promoción, calcula la cantidad total de unidades vendidas y el importe de descuento total. Muestra el nombre de la promoción en español, su tipo y categoría. Limita el resultado a las 10 promociones con el mayor descuento total.",
+    "SQL_query": "SELECT\n  dp.spanish_promotion_name AS promotion_name,\n  dp.spanish_promotion_type AS promotion_type,\n  dp.spanish_promotion_category AS promotion_category,\n  SUM(fs.order_quantity) AS total_quantity_sold,\n  SUM(fs.discount_amount) AS total_discount_amount\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_promotion dp ON fs.promotion_key = dp.promotion_key\nGROUP BY\n  dp.spanish_promotion_name, dp.spanish_promotion_type, dp.spanish_promotion_category\nORDER BY\n  total_discount_amount DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "For each sales order, calculate the shipping time, delivery time, and total order processing time in days. Show the sales order number and the calculated times. Display results for orders from the first quarter of the current year.",
+    "SQL_query": "SELECT\n  sales_order_number,\n  DATE_PART('day', ship_date - order_date) AS shipping_time_days,\n  DATE_PART('day', due_date - ship_date) AS delivery_time_days,\n  DATE_PART('day', due_date - order_date) AS total_order_processing_time_days\nFROM\n  sales.fact_sales\nWHERE\n  EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\n  AND EXTRACT(QUARTER FROM order_date) = 1;"
+  },
+  {
+    "user_query": "Muestra los 5 productos 'de mayor facturación' (sales_amount) vendidos a clientes B2C ('internet_sales') en el último trimestre. Incluye el nombre del producto en español y el importe total facturado.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_name, dp.english_product_name) AS product_name,\n  SUM(fs.sales_amount) AS total_sales_amount\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  fs.sale_source = 'internet_sales'\n  AND fs.order_date >= DATE_TRUNC('quarter', CURRENT_DATE - INTERVAL '3 months')\n  AND fs.order_date < DATE_TRUNC('quarter', CURRENT_DATE)\nGROUP BY\n  product_name\nORDER BY\n  total_sales_amount DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "Get the total sales and the total cost of goods sold (COGS) for products with a 'Mountain' product line. Display the results for B2B ('reseller_sales') and B2C ('internet_sales') separately.",
+    "SQL_query": "SELECT\n  fs.sale_source,\n  SUM(fs.sales_amount) AS total_sales,\n  SUM(fs.total_product_cost) AS total_cogs\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  dp.product_line = 'M'\nGROUP BY\n  fs.sale_source\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "¿Qué vendedores tienen un 'title' de 'Sales Representative' y qué ventas totales ('sales_amount') han logrado en el último mes? Muestra su nombre completo y sus ventas totales.",
+    "SQL_query": "SELECT\n  dsp.employee_full_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_person dsp ON fs.employee_key = dsp.employee_key\nWHERE\n  dsp.title = 'Sales Representative'\n  AND fs.order_date >= DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')\n  AND fs.order_date < DATE_TRUNC('month', CURRENT_DATE)\nGROUP BY\n  dsp.employee_full_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "What are the names of the promotions in English and their type and category in English? Order them by promotion type.",
+    "SQL_query": "SELECT\n  english_promotion_name,\n  english_promotion_type,\n  english_promotion_category\nFROM\n  sales.dim_promotion\nORDER BY\n  english_promotion_type;"
+  },
+  {
+    "user_query": "Dame las ventas totales ('sales_amount') para cada país de la 'North America' sales territory group. Muestra el nombre del país en español y las ventas totales, ordenando de mayor a menor venta.",
+    "SQL_query": "SELECT\n  dg.spanish_country_region_name AS country_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nJOIN\n  sales.dim_geography dg ON dst.sales_territory_key = dg.sales_territory_key\nWHERE\n  dst.sales_territory_group = 'North America'\nGROUP BY\n  country_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "What is the average 'yearly_income' for customers who are 'married' and own a house? Show the result.",
+    "SQL_query": "SELECT\n  AVG(yearly_income) AS average_yearly_income\nFROM\n  sales.dim_customer\nWHERE\n  marital_status = 'M'\n  AND house_owner = TRUE;"
+  },
+  {
+    "user_query": "Dime el top 5 de distribuidores ('resellers') por ventas totales en el año pasado. Muestra el nombre del distribuidor y el importe total de ventas.",
+    "SQL_query": "SELECT\n  dr.reseller_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_reseller dr ON fs.reseller_key = dr.reseller_key\nWHERE\n  fs.sale_source = 'reseller_sales'\n  AND EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\nGROUP BY\n  dr.reseller_name\nORDER BY\n  total_sales DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "Dime el precio promedio de los productos en la categoría 'Bicicletas'.",
+    "SQL_query": "SELECT AVG(list_price)\nFROM sales.dim_product\nWHERE spanish_product_category_name = 'Bicicletas' OR english_product_category_name = 'Bikes';"
+  },
+  {
+    "user_query": "Calculate the total sales amount for internet sales.",
+    "SQL_query": "SELECT SUM(sales_amount)\nFROM sales.fact_sales\nWHERE sale_source = 'internet_sales';"
+  },
+  {
+    "user_query": "Dime los nombres de los productos que son de color 'Silver'.",
+    "SQL_query": "SELECT spanish_product_name, english_product_name\nFROM sales.dim_product\nWHERE color = 'Silver';"
+  },
+  {
+    "user_query": "Obtén la cantidad de clientes que tienen más de 3 hijos en casa.",
+    "SQL_query": "SELECT COUNT(customer_key)\nFROM sales.dim_customer\nWHERE number_children_at_home > 3;"
+  },
+  {
+    "user_query": "List all sales promotions with their start and end dates.",
+    "SQL_query": "SELECT english_promotion_name, start_date, end_date\nFROM sales.dim_promotion;"
+  },
+  {
+    "user_query": "Ventas totales por año.",
+    "SQL_query": "SELECT\n  EXTRACT(YEAR FROM order_date) AS sales_year,\n  SUM(sales_amount) AS total_sales\nFROM\n  sales.fact_sales\nGROUP BY\n  sales_year\nORDER BY\n  sales_year;"
+  },
+  {
+    "user_query": "Productos con un precio de lista superior a 1500.",
+    "SQL_query": "SELECT spanish_product_name, english_product_name, list_price\nFROM sales.dim_product\nWHERE list_price > 1500;"
+  },
+  {
+    "user_query": "Get the total number of orders by month for the current year.",
+    "SQL_query": "SELECT\n  EXTRACT(MONTH FROM order_date) AS sales_month,\n  COUNT(DISTINCT sales_order_number) AS total_orders\nFROM\n  sales.fact_sales\nWHERE\n  EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY\n  sales_month\nORDER BY\n  sales_month;"
+  },
+  {
+    "user_query": "Clientes casados.",
+    "SQL_query": "SELECT customer_full_name\nFROM sales.dim_customer\nWHERE marital_status = 'M';"
+  },
+  {
+    "user_query": "Obtén el total de ventas por categoría de producto para ventas B2B.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  fs.sale_source = 'reseller_sales'\nGROUP BY\n  product_category\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "List the employees who are sales representatives.",
+    "SQL_query": "SELECT employee_full_name\nFROM sales.dim_sales_person\nWHERE title = 'Sales Representative';"
+  },
+  {
+    "user_query": "Productos más vendidos.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_name, dp.english_product_name) AS product_name,\n  SUM(fs.order_quantity) AS total_quantity_sold\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nGROUP BY\n  product_name\nORDER BY\n  total_quantity_sold DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "Calcula el margen bruto total de la subcategoría de producto 'Road Bikes'.",
+    "SQL_query": "SELECT\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  dp.english_product_subcategory_name = 'Road Bikes' OR dp.spanish_product_subcategory_name = 'Bicicletas de Carretera';"
+  },
+  {
+    "user_query": "Resellers con más de 10 empleados.",
+    "SQL_query": "SELECT reseller_name\nFROM sales.dim_reseller\nWHERE number_employees > 10;"
+  },
+  {
+    "user_query": "Ventas del último trimestre.",
+    "SQL_query": "SELECT SUM(sales_amount) AS total_sales\nFROM sales.fact_sales\nWHERE order_date >= DATE_TRUNC('quarter', CURRENT_DATE - INTERVAL '3 months');"
+  },
+  {
+    "user_query": "Get the top 5 customers with the highest total sales amount for 'internet_sales'.",
+    "SQL_query": "SELECT\n  dc.customer_full_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_customer dc ON fs.customer_key = dc.customer_key\nWHERE\n  fs.sale_source = 'internet_sales'\nGROUP BY\n  dc.customer_full_name\nORDER BY\n  total_sales DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "Productos con un precio de lista entre 500 y 1000.",
+    "SQL_query": "SELECT spanish_product_name, english_product_name, list_price\nFROM sales.dim_product\nWHERE list_price BETWEEN 500 AND 1000;"
+  },
+  {
+    "user_query": "Número de pedidos por motivo de venta.",
+    "SQL_query": "SELECT\n  dsr.sales_reason_name,\n  COUNT(fisr.sales_order_number) AS number_of_orders\nFROM\n  sales.fact_internet_sales_reason fisr\nJOIN\n  sales.dim_sales_reason dsr ON fisr.sales_reason_key = dsr.sales_reason_key\nGROUP BY\n  dsr.sales_reason_name\nORDER BY\n  number_of_orders DESC;"
+  },
+  {
+    "user_query": "What is the total discount amount for the last year?",
+    "SQL_query": "SELECT SUM(discount_amount)\nFROM sales.fact_sales\nWHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1;"
+  },
+  {
+    "user_query": "List all promotions with an English promotion type of 'Seasonal Discount'.",
+    "SQL_query": "SELECT english_promotion_name, english_promotion_category\nFROM sales.dim_promotion\nWHERE english_promotion_type = 'Seasonal Discount';"
+  },
+  {
+    "user_query": "Ventas totales por país de territorio de ventas 'Pacific'.",
+    "SQL_query": "SELECT\n  dg.spanish_country_region_name AS country_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nJOIN\n  sales.dim_geography dg ON dst.sales_territory_key = dg.sales_territory_key\nWHERE\n  dst.sales_territory_group = 'Pacific'\nGROUP BY\n  country_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "What is the average yearly income for customers who own a house?",
+    "SQL_query": "SELECT AVG(yearly_income)\nFROM sales.dim_customer\nWHERE house_owner = TRUE;"
+  },
+  {
+    "user_query": "Ventas de los últimos 6 meses.",
+    "SQL_query": "SELECT SUM(sales_amount)\nFROM sales.fact_sales\nWHERE order_date >= CURRENT_DATE - INTERVAL '6 months';"
+  },
+  {
+    "user_query": "Total de ventas por vendedor en el año actual.",
+    "SQL_query": "SELECT\n  dsp.employee_full_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_person dsp ON fs.employee_key = dsp.employee_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY\n  dsp.employee_full_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "List all products in the 'Components' category with their standard cost and list price.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  standard_cost,\n  list_price\nFROM\n  sales.dim_product\nWHERE\n  spanish_product_category_name = 'Componentes' OR english_product_category_name = 'Components';"
+  },
+  {
+    "user_query": "Dime el precio promedio de los productos en la categoría 'Bicicletas'.",
+    "SQL_query": "SELECT AVG(list_price)\nFROM sales.dim_product\nWHERE spanish_product_category_name = 'Bicicletas' OR english_product_category_name = 'Bikes';"
+  },
+  {
+    "user_query": "Calculate the total sales amount for internet sales.",
+    "SQL_query": "SELECT SUM(sales_amount)\nFROM sales.fact_sales\nWHERE sale_source = 'internet_sales';"
+  },
+  {
+    "user_query": "Dime los nombres de los productos que son de color 'Silver'.",
+    "SQL_query": "SELECT spanish_product_name, english_product_name\nFROM sales.dim_product\nWHERE color = 'Silver';"
+  },
+  {
+    "user_query": "Obtén la cantidad de clientes que tienen más de 3 hijos en casa.",
+    "SQL_query": "SELECT COUNT(customer_key)\nFROM sales.dim_customer\nWHERE number_children_at_home > 3;"
+  },
+  {
+    "user_query": "List all sales promotions with their start and end dates.",
+    "SQL_query": "SELECT english_promotion_name, start_date, end_date\nFROM sales.dim_promotion;"
+  },
+  {
+    "user_query": "Ventas totales por año.",
+    "SQL_query": "SELECT\n  EXTRACT(YEAR FROM order_date) AS sales_year,\n  SUM(sales_amount) AS total_sales\nFROM\n  sales.fact_sales\nGROUP BY\n  sales_year\nORDER BY\n  sales_year;"
+  },
+  {
+    "user_query": "Productos con un precio de lista superior a 1500.",
+    "SQL_query": "SELECT spanish_product_name, english_product_name, list_price\nFROM sales.dim_product\nWHERE list_price > 1500;"
+  },
+  {
+    "user_query": "Get the total number of orders by month for the current year.",
+    "SQL_query": "SELECT\n  EXTRACT(MONTH FROM order_date) AS sales_month,\n  COUNT(DISTINCT sales_order_number) AS total_orders\nFROM\n  sales.fact_sales\nWHERE\n  EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY\n  sales_month\nORDER BY\n  sales_month;"
+  },
+  {
+    "user_query": "Clientes casados.",
+    "SQL_query": "SELECT customer_full_name\nFROM sales.dim_customer\nWHERE marital_status = 'M';"
+  },
+  {
+    "user_query": "Obtén el total de ventas por categoría de producto para ventas B2B.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  fs.sale_source = 'reseller_sales'\nGROUP BY\n  product_category\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "List the employees who are sales representatives.",
+    "SQL_query": "SELECT employee_full_name\nFROM sales.dim_sales_person\nWHERE title = 'Sales Representative';"
+  },
+  {
+    "user_query": "Productos más comprados por clientes en el último trimestre.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_name, dp.english_product_name) AS product_name,\n  SUM(fs.order_quantity) AS total_quantity_sold\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  fs.order_date >= DATE_TRUNC('quarter', CURRENT_DATE - INTERVAL '3 months')\n  AND fs.order_date < DATE_TRUNC('quarter', CURRENT_DATE)\nGROUP BY\n  product_name\nORDER BY\n  total_quantity_sold DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "Calcula el margen bruto total de la subcategoría de producto 'Road Bikes'.",
+    "SQL_query": "SELECT\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  dp.english_product_subcategory_name = 'Road Bikes' OR dp.spanish_product_subcategory_name = 'Bicicletas de Carretera';"
+  },
+  {
+    "user_query": "Resellers con más de 10 empleados.",
+    "SQL_query": "SELECT reseller_name\nFROM sales.dim_reseller\nWHERE number_employees > 10;"
+  },
+  {
+    "user_query": "Ventas del último trimestre.",
+    "SQL_query": "SELECT SUM(sales_amount) AS total_sales\nFROM sales.fact_sales\nWHERE order_date >= DATE_TRUNC('quarter', CURRENT_DATE - INTERVAL '3 months');"
+  },
+  {
+    "user_query": "Get the top 5 customers with the highest total purchases for 'internet_sales'.",
+    "SQL_query": "SELECT\n  dc.customer_full_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_customer dc ON fs.customer_key = dc.customer_key\nWHERE\n  fs.sale_source = 'internet_sales'\nGROUP BY\n  dc.customer_full_name\nORDER BY\n  total_sales DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "Productos con un precio de lista entre 500 y 1000.",
+    "SQL_query": "SELECT spanish_product_name, english_product_name, list_price\nFROM sales.dim_product\nWHERE list_price BETWEEN 500 AND 1000;"
+  },
+  {
+    "user_query": "Número de pedidos por motivo de venta.",
+    "SQL_query": "SELECT\n  dsr.sales_reason_name,\n  COUNT(fisr.sales_order_number) AS number_of_orders\nFROM\n  sales.fact_internet_sales_reason fisr\nJOIN\n  sales.dim_sales_reason dsr ON fisr.sales_reason_key = dsr.sales_reason_key\nGROUP BY\n  dsr.sales_reason_name\nORDER BY\n  number_of_orders DESC;"
+  },
+  {
+    "user_query": "What is the total discount amount for the last year?",
+    "SQL_query": "SELECT SUM(discount_amount)\nFROM sales.fact_sales\nWHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1;"
+  },
+  {
+    "user_query": "List all promotions with an English promotion type of 'Seasonal Discount'.",
+    "SQL_query": "SELECT english_promotion_name, english_promotion_category\nFROM sales.dim_promotion\nWHERE english_promotion_type = 'Seasonal Discount';"
+  },
+  {
+    "user_query": "Ventas totales por país de territorio de ventas 'Pacific'.",
+    "SQL_query": "SELECT\n  dg.spanish_country_region_name AS country_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nJOIN\n  sales.dim_geography dg ON dst.sales_territory_key = dg.sales_territory_key\nWHERE\n  dst.sales_territory_group = 'Pacific'\nGROUP BY\n  country_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "What is the average yearly income for customers who own a house?",
+    "SQL_query": "SELECT AVG(yearly_income)\nFROM sales.dim_customer\nWHERE house_owner = TRUE;"
+  },
+  {
+    "user_query": "Ventas de los últimos 6 meses.",
+    "SQL_query": "SELECT SUM(sales_amount)\nFROM sales.fact_sales\nWHERE order_date >= CURRENT_DATE - INTERVAL '6 months';"
+  },
+  {
+    "user_query": "Total de ventas por vendedor en el año actual.",
+    "SQL_query": "SELECT\n  dsp.employee_full_name,\n  SUM(fs.sales_amount) AS total_sales\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_person dsp ON fs.employee_key = dsp.employee_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY\n  dsp.employee_full_name\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "List all products in the 'Components' category with their standard cost and list price.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  standard_cost,\n  list_price\nFROM\n  sales.dim_product\nWHERE\n  spanish_product_category_name = 'Componentes' OR english_product_category_name = 'Components';"
+  },
+  {
+    "user_query": "Obtén la cantidad de pedidos por tipo de negocio de distribuidor ('reseller').",
+    "SQL_query": "SELECT\n  dr.business_type,\n  COUNT(DISTINCT fs.sales_order_number) AS total_orders\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_reseller dr ON fs.reseller_key = dr.reseller_key\nWHERE\n  fs.sale_source = 'reseller_sales'\nGROUP BY\n  dr.business_type\nORDER BY\n  total_orders DESC;"
+  },
+  {
+    "user_query": "What is the total freight cost for each sales order number?",
+    "SQL_query": "SELECT\n  sales_order_number,\n  SUM(freight) AS total_freight_cost\nFROM\n  sales.fact_sales\nGROUP BY\n  sales_order_number\nORDER BY\n  total_freight_cost DESC;"
+  },
+  {
+    "user_query": "Promociones activas en la actualidad.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_promotion_name, english_promotion_name) AS promotion_name\nFROM\n  sales.dim_promotion\nWHERE\n  CURRENT_DATE BETWEEN start_date AND end_date;"
+  },
+  {
+    "user_query": "List the top 10 products with the highest gross margin.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_name, dp.english_product_name) AS product_name,\n  SUM(fs.sales_amount - fs.total_product_cost) AS gross_margin\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nGROUP BY\n  product_name\nORDER BY\n  gross_margin DESC\nLIMIT 10;"
+  },
+  {
+    "user_query": "Ventas y compras por categoría en el año 2024.",
+    "SQL_query": "SELECT\n  COALESCE(dp.spanish_product_category_name, dp.english_product_category_name) AS product_category,\n  SUM(fs.sales_amount) AS total_sales,\n  SUM(fs.total_product_cost) AS total_cost\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = 2024\nGROUP BY\n  product_category\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "Get the number of customers from each country in the 'Europe' sales territory group.",
+    "SQL_query": "SELECT\n  dg.spanish_country_region_name AS country_name,\n  COUNT(dc.customer_key) AS number_of_customers\nFROM\n  sales.dim_customer dc\nJOIN\n  sales.dim_geography dg ON dc.geography_key = dg.geography_key\nJOIN\n  sales.dim_sales_territory dst ON dg.sales_territory_key = dst.sales_territory_key\nWHERE\n  dst.sales_territory_group = 'Europe'\nGROUP BY\n  country_name\nORDER BY\n  number_of_customers DESC;"
+  },
+  {
+    "user_query": "Ventas totales y coste total para la línea de productos 'R' en el último año, diferenciando por 'internet_sales' y 'reseller_sales'.",
+    "SQL_query": "SELECT\n  fs.sale_source,\n  SUM(fs.sales_amount) AS total_sales,\n  SUM(fs.total_product_cost) AS total_cost\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  dp.product_line = 'R'\n  AND EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\nGROUP BY\n  fs.sale_source\nORDER BY\n  total_sales DESC;"
+  },
+  {
+    "user_query": "Obtén los 5 clientes que tienen más hijos en casa, junto con su ingreso anual y el número de hijos.",
+    "SQL_query": "SELECT\n  customer_full_name,\n  yearly_income,\n  number_children_at_home\nFROM\n  sales.dim_customer\nORDER BY\n  number_children_at_home DESC\nLIMIT 5;"
+  },
+  {
+    "user_query": "List all products that have a list price and a standard cost, and the list price is more than twice the standard cost.",
+    "SQL_query": "SELECT\n  COALESCE(spanish_product_name, english_product_name) AS product_name,\n  list_price,\n  standard_cost\nFROM\n  sales.dim_product\nWHERE\n  list_price IS NOT NULL\n  AND standard_cost IS NOT NULL\n  AND list_price > (2 * standard_cost);"
+  },
+  {
+    "user_query": "Productos del segmento 'Premium' que se han vendido en el último año.",
+    "SQL_query": "SELECT\n  DISTINCT COALESCE(dp.spanish_product_name, dp.english_product_name) AS product_name\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_product dp ON fs.product_key = dp.product_key\nWHERE\n  EXTRACT(YEAR FROM fs.order_date) = EXTRACT(YEAR FROM CURRENT_DATE) - 1\n  AND dp.list_price >= 1000;"
+  },
+  {
+    "user_query": "Total de compras ('total_product_cost') por país de los clientes que residen en 'United States' o 'Canada'.",
+    "SQL_query": "SELECT\n  dg.spanish_country_region_name AS country_name,\n  SUM(fs.total_product_cost) AS total_product_cost\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_sales_territory dst ON fs.sales_territory_key = dst.sales_territory_key\nJOIN\n  sales.dim_geography dg ON dst.sales_territory_key = dg.sales_territory_key\nWHERE\n  dg.english_country_region_name IN ('United States', 'Canada')\nGROUP BY\n  country_name\nORDER BY\n  total_product_cost DESC;"
+  },
+  {
+    "user_query": "Calculate the average sales amount per reseller for the last two years.",
+    "SQL_query": "SELECT\n  dr.reseller_name,\n  AVG(fs.sales_amount) AS average_sales_amount\nFROM\n  sales.fact_sales fs\nJOIN\n  sales.dim_reseller dr ON fs.reseller_key = dr.reseller_key\nWHERE\n  fs.sale_source = 'reseller_sales'\n  AND EXTRACT(YEAR FROM fs.order_date) >= EXTRACT(YEAR FROM CURRENT_DATE) - 2\nGROUP BY\n  dr.reseller_name\nORDER BY\n  average_sales_amount DESC;"
+  },
+  {
+    "user_query": "Clientes con un 'customer_income_segment' de 'Alto Valor' y 'customer_lifestyle_segment' de 'Familia Propietaria'.",
+    "SQL_query": "SELECT\n  customer_full_name\nFROM\n  sales.dim_customer\nWHERE\n  yearly_income >= 100000\n  AND house_owner = TRUE\n  AND number_children_at_home > 0;"
+  }
+]
