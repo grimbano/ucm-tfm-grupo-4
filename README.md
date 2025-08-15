@@ -4,6 +4,16 @@ Este repositorio contiene el código fuente para el Trabajo de Fin de Máster (T
 
 ---
 
+## Requisitos previos
+
+* Antes de instalar el repositorio, se recomienda tener instalado `Git Large File Storage (LFS)`. Dado que trabajaremos con Chroma DB, y que esta base de datos vectorial puede persisitir fichero `*.bin` de más de 100MB (tamaño soportado por git sin requerir LFS). Para instalar esta extensión, simplemente alcanza con ejecutar el siguiente comando
+
+    ```bash
+    git lfs install
+    ```
+
+    En caso de requerir más información sobre esta extensión, puede hacerlo consultando [el siguiente enlace](https://git-lfs.com/).
+
 ## Inicialización del Repositorio
 
 Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar en el proyecto:
@@ -69,16 +79,16 @@ Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar
 
     **¿Cuándo usar `uv add` y `uv lock`?**
 
-    - `uv add <paquete>`: Utiliza este comando cuando necesites añadir una nueva dependencia a tu proyecto. `uv` no solo instalará el paquete, sino que también lo añadirá automáticamente a `pyproject.toml` y actualizará el archivo `uv.lock`.
+    * `uv add <paquete>`: Utiliza este comando cuando necesites añadir una nueva dependencia a tu proyecto. `uv` no solo instalará el paquete, sino que también lo añadirá automáticamente a `pyproject.toml` y actualizará el archivo `uv.lock`.
 
         ```bash
         uv add requests
         ```
 
-    - `uv lock`: Debes ejecutar uv lock cuando:
+    * `uv lock`: Debes ejecutar uv lock cuando:
 
-      - Has modificado manualmente pyproject.toml (por ejemplo, has cambiado la versión de una dependencia o añadido una nueva sin usar uv add).
-      - Necesitas regenerar el archivo uv.lock para reflejar los cambios en pyproject.toml o para obtener las últimas versiones compatibles de tus dependencias.
+      * Has modificado manualmente pyproject.toml (por ejemplo, has cambiado la versión de una dependencia o añadido una nueva sin usar uv add).
+      * Necesitas regenerar el archivo uv.lock para reflejar los cambios en pyproject.toml o para obtener las últimas versiones compatibles de tus dependencias.
 
         ```bash
         uv lock
@@ -92,9 +102,9 @@ Este proyecto utiliza Docker para gestionar la base de datos PostgreSQL, lo que 
 
 La configuración de Docker para la base de datos se encuentra en la carpeta data/database/postgres/docker/. Dentro de esta carpeta, encontrarás los siguientes archivos:
 
-- `docker-compose.yml`: Define los servicios de Docker, en este caso, el contenedor de PostgreSQL y cualquier servicio adicional relacionado con la base de datos.
+* `docker-compose.yml`: Define los servicios de Docker, en este caso, el contenedor de PostgreSQL y cualquier servicio adicional relacionado con la base de datos.
 
-- `.env.example`: Contiene variables de entorno de ejemplo para la configuración de PostgreSQL (como usuario, contraseña, nombre de la base de datos, etc.).
+* `.env.example`: Contiene variables de entorno de ejemplo para la configuración de PostgreSQL (como usuario, contraseña, nombre de la base de datos, etc.).
 
 Sigue estos pasos para levantar la base de datos:
 
