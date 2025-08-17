@@ -9,6 +9,7 @@ dependencies = [
     "google-genai>=1.30.0",
     "langchain>=0.3.27",
     "langchain-chroma>=0.2.5",
+    "langchain-community>=0.3.27",
     "langchain-openai>=0.3.29",
     "notebook>=7.4.4",
     "openai==1.93.2",
