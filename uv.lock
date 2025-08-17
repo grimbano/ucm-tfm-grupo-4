@@ -3578,6 +3578,7 @@ dependencies = [
     { name = "psycopg2" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
+    { name = "regex" },
 ]
 
 [package.metadata]
@@ -3595,6 +3596,7 @@ requires-dist = [
     { name = "psycopg2", specifier = ">=2.9.10" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "regex", specifier = ">=2025.7.34" },
 ]
 
 [[package]]
