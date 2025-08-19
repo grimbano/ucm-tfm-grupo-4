@@ -26,7 +26,7 @@ Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar
     cd ucm-tfm-grupo-4
     ```
 
-    Asegúrate de reemplazar `https://github.com/tu-usuario/ucm-tfm-grupo-4.git` con la URL real de tu repositorio.
+    Asegúrate de reemplazar `https://github.com/grimbano/ucm-tfm-grupo-4.git` con la URL real de tu repositorio.
 
 2. Actualizar `pip`
     Es una buena práctica asegurarse de que `pip` esté actualizado:
@@ -59,7 +59,7 @@ Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar
     Con el entorno virtual activado, sincroniza todas las dependencias del proyecto especificadas en `pyproject.toml` y `uv.lock`:
 
     ```bash
-    uv sync
+    uv pip sync pyproject.toml
     ```
 
     Este comando asegurará que todas las bibliotecas necesarias estén instaladas en tu entorno virtual.
