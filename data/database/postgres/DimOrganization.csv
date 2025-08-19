@@ -1,14 +1,3 @@
-1||1|AdventureWorks Cycle|100
-2|1|1|North America Operations|100
-3|14|1|Northeast Division|100
-4|14|1|Northwest Division|100
-5|14|1|Central Division|100
-6|14|1|Southeast Division|100
-7|14|1|Southwest Division|100
-8|2|.75|Canadian Division|19
-9|1|1|European Operations|36
-10|1|.75|Pacific Operations|6
-11|9|.50|France|36
-12|9|.25|Germany|36
-13|10|.50|Australia|6
-14|2|1|USA Operations|100
+version https://git-lfs.github.com/spec/v1
+oid sha256:edc977b97a6899dab5e58cd22888bbba3fd424ee558a9bea6ced75443bf421d5
+size 402
