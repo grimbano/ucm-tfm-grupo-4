@@ -62,23 +62,29 @@ def execute_commands(commands: list[str], port: int = None) -> None:
 
 
 
-def execute_query(query: str, port: int = None) -> list[dict] | None:
+def execute_query(query: str, params: list | None = None, port: int = None) -> list[dict] | None:
     """
     Executes a SQL SELECT query and returns the results as a list of dictionaries.
 
+    This function is designed to be secure against SQL injection by using
+    parameterized queries.
+
     Args:
-        query (str): The SQL SELECT query to execute.
+        query (str): The SQL SELECT query to execute, with placeholders (e.g., %s).
+        params (List[Any] | None): A list of values to substitute for the placeholders.
+                                   Defaults to None.
+        port (int | None): An integer to force a different port than the .env one.
 
     Returns:
-        list[dict] | None: A list of dictionaries representing the query results,
+        List[Dict] | None: A list of dictionaries representing the query results,
                            or None if the query fails.
-        port (int): An integer to force a different port that the .env one.
 
     Raises:
         AssertionError: If the query is not a SELECT command.
         psycopg2.DatabaseError: If there is a database error.
         Exception: For any other exceptions that occur.
     """
+
     assert query.strip().upper().split()[0] in ('SELECT', 'WITH'), 'The query must be a `SELECT` command.'
 
     query_results = None
@@ -89,7 +95,11 @@ def execute_query(query: str, port: int = None) -> list[dict] | None:
     try:
         with psycopg2.connect(**pg_config) as connection:
             with connection.cursor(cursor_factory=RealDictCursor) as cursor:
-                cursor.execute(query)
+                if params:
+                    cursor.execute(query, params)
+                else:
+                    cursor.execute(query)
+                
                 query_results = cursor.fetchall()
 
     except (psycopg2.DatabaseError, Exception) as e:
