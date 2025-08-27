@@ -5,9 +5,11 @@ pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f C:/python/ucm-tfm-grupo-4
 pg_restore -h localhost -p 5432 -U postgres -Fc -v -d adventure_works_dw C:/python/ucm-tfm-grupo-4/data/database/postgres/docker/adventure_works_dw_backup.bak
 
 [DOCKER_RUNNING]
-cd data/database/postgres/docker
-C:\python\ucm-tfm-grupo-4\data\database\postgres\docker>docker compose down -v
-C:\python\ucm-tfm-grupo-4\data\database\postgres\docker>docker compose run --rm db-restore
+docker compose down -v
+docker compose up -d
+docker compose logs tfm-postgres-db
+docker compose logs tfm-chroma-db
 
 [give permission to entrypoint sh]
-chmod +x restore_on_startup.sh
+dos2unix data/database/postgres/docker/restore_on_startup.sh
+chmod +x data/database/postgres/docker/restore_on_startup.sh
