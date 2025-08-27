@@ -6,7 +6,7 @@ schemas:
   description: 'Se trata de un esquema de ventas con espíritu de simplificar la información del módulo de ventas de la BBDD original. Contamos con información de ventas (tanto por internet como de retail), y las dimensiones asociadas (promociones, clientes, distribuidores, vendedores, porductos, etc.).'
   tables:
   - name: dim_customer
-    description: 'Tabla de dimensión que almacena la información detallada de cada cliente que haya comprado online (por internet). Relevante cuando se hacen consultas relativas a clientes, como su nombre, análisis por género y estado civil o ingresos de los mismos.'
+    description: 'Tabla de dimensión que almacena la información detallada de cada cliente que haya comprado online (por internet), para el segmento minorista (B2C). Relevante cuando se hacen consultas relativas a clientes, como su nombre, análisis por género y estado civil o ingresos de los mismos.'
     columns:
     - name: customer_key
       description: 'Clave primaria para identificar de forma única a cada cliente.'
@@ -28,11 +28,11 @@ schemas:
       data_type: DATE
 
     - name: marital_status
-      description: 'Estado civil del cliente. M=Married(Casada/o), S=Single(Soltera/o)'
+      description: "Estado civil del cliente. 'M'=Married(Casada/o), 'S'=Single(Soltera/o)"
       data_type: BPCHAR(1)
 
     - name: gender
-      description: 'Género del cliente. F=Female(Mujer), M=Male(Hombre)'
+      description: "Género del cliente. 'F'=Female(Mujer), 'M'=Male(Hombre)"
       data_type: VARCHAR(1)
 
     - name: yearly_income
@@ -64,7 +64,7 @@ schemas:
       data_type: VARCHAR(100)
 
     - name: house_owner
-      description: 'Indicador de si el cliente es propietario. True=Propietario, False=No Propietario'
+      description: "Indicador de si el cliente es propietario. 'True'=Propietario, 'False'=No Propietario"
       data_type: BOOL
 
     - name: number_cars_owned
@@ -72,7 +72,7 @@ schemas:
       data_type: INT2
 
     - name: commute_distance
-      description: 'Distancia entre la casa del cliente y su lugar habitual de trabajo. Segmentado en 5 categorías: ["0-1 Miles", "1-2 Miles", "2-5 Miles", "5-10 Miles", "10+ Miles"]'
+      description: "Distancia entre la casa del cliente y su lugar habitual de trabajo. Segmentado en 5 categorías: ['0-1 Miles', '1-2 Miles', '2-5 Miles', '5-10 Miles', '10+ Miles']"
       data_type: VARCHAR(15)
 
   - name: dim_geography
@@ -146,11 +146,11 @@ schemas:
       data_type: NUMERIC
 
     - name: finished_goods_flag
-      description: 'Indicador de si se trata de un producto final vendible. 0 = El producto no es un artículo vendible, 1 = El producto es vendible.'
+      description: "Indicador de si se trata de un producto final vendible. '0'=El producto no es un artículo vendible, '1'=El producto es vendible."
       data_type: BOOL
 
     - name: color
-      description: 'Color del producto. Para los casos donde no corresponda, se identifica con un "NA".'
+      description: "Color del producto. Para los casos donde no corresponda, se identifica con un 'NA'."
       data_type: VARCHAR(15)
 
     - name: safety_stock_level
@@ -170,7 +170,7 @@ schemas:
       data_type: VARCHAR(50)
 
     - name: size_range
-      description: 'Rango dentro del que entra la talla del producto. Ej.: 48-52 CM, L. En caso de no aplique, se indica un "NA". Puede venir a NULL.'
+      description: "Rango dentro del que entra la talla del producto. Ej.: 48-52 CM, L. En caso de no aplique, se indica un 'NA'. Puede venir a NULL."
       data_type: VARCHAR(50)
 
     - name: weight
@@ -182,7 +182,7 @@ schemas:
       data_type: INT4
 
     - name: product_line
-      description: 'Línea a la que pertence el producto. R=Road(Carretera), M=Mountain(Montaña), T=Touring(Turismo), S=Standard(Estándar). Puede venir a NULL.'
+      description: "Línea a la que pertence el producto. 'R'=Road(Carretera), 'M'=Mountain(Montaña), 'T'=Touring(Turismo), 'S'=Standard(Estándar). Puede venir a NULL."
       data_type: BPCHAR(2)
 
     - name: dealer_price
@@ -190,11 +190,11 @@ schemas:
       data_type: NUMERIC
 
     - name: class
-      description: 'Gama a la que pertenece el producto. H=High(Alta), M=Medium(Media), L=Low(Baja). Puede venir a NULL.'
+      description: "Gama a la que pertenece el producto. 'H'=High(Alta), 'M'=Medium(Media), 'L'=Low(Baja). Puede venir a NULL."
       data_type: BPCHAR(2)
 
     - name: style
-      description: 'Público para el que está pensado el producto. W=Womens(Mujeres), M=Mens(Hombres), U=Universal.  Puede venir a NULL.'
+      description: "Público para el que está pensado el producto. 'W'=Womens(Mujeres), 'M'=Mens(Hombres), 'U'=Universal.  Puede venir a NULL."
       data_type: BPCHAR(2)
 
     - name: model_name
@@ -217,20 +217,20 @@ schemas:
       description: 'Indicador de si el producto sigue disponible para la venta.'
       data_type: BOOL
 
-    - name: english_product_subcategory_name
-      description: 'Sub-categoría a la que pertenece el producto (INGLÉS). NUNCA viene a NULL.'
-      data_type: VARCHAR(50)
-
-    - name: spanish_product_subcategory_name
-      description: 'Sub-categoría a la que pertenece el producto (ESPAÑOL). NUNCA viene a NULL.'
-      data_type: VARCHAR(50)
-
     - name: english_product_category_name
-      description: 'Categoría principal a la que pertenece el producto (INGLÉS). NUNCA viene a NULL.'
+      description: "Categoría principal a la que pertenece el producto (INGLÉS). Las categorías son 'Clothing', 'Components', 'Accessories' y 'Bikes'. NUNCA viene a NULL."
       data_type: VARCHAR(50)
 
     - name: spanish_product_category_name
-      description: 'Categoría principal a la que pertenece el producto (ESPAÑOL). NUNCA viene a NULL.'
+      description: "Categoría principal a la que pertenece el producto (ESPAÑOL). Las categorías son 'Prenda', 'Componente', 'Accesorio' y 'Bicicleta'  NUNCA viene a NULL."
+      data_type: VARCHAR(50)
+
+    - name: english_product_subcategory_name
+      description: 'Sub-categoría a la que pertenece el producto (INGLÉS). Cada categoría puede tener múltiples sub-categorías, llegando a tener hasta 150 valores diferentes. NUNCA viene a NULL.'
+      data_type: VARCHAR(50)
+
+    - name: spanish_product_subcategory_name
+      description: 'Sub-categoría a la que pertenece el producto (ESPAÑOL). Cada categoría puede tener múltiples sub-categorías, llegando a tener hasta 150 valores diferentes. NUNCA viene a NULL.'
       data_type: VARCHAR(50)
 
   - name: dim_promotion
@@ -286,7 +286,7 @@ schemas:
       data_type: INT4
 
   - name: dim_reseller
-    description: 'Tabla de dimensión que almacena la información detallada de cada tienda/distribuidor. Relevante siempre que se pida obtener listado con datos de tiendas/distribuidores porque en esta tabla se almacenan sus nombres.'
+    description: 'Tabla de dimensión que almacena la información detallada de cada tienda/distribuidor del segmento mayorista (B2B). Relevante siempre que se pida obtener listado con datos de tiendas/distribuidores porque en esta tabla se almacenan sus nombres.'
     columns:
     - name: reseller_key
       description: 'Clave primaria para identificar de forma única a cada distribuidor.'
@@ -312,7 +312,7 @@ schemas:
       data_type: INT4
 
     - name: order_frequency
-      description: 'Frecuencia con la que se espera que compre un distribuidor. A=Anually(Anual), S=Semestrally(Semestral), Q=Quaterlly(Trimestral).'
+      description: "Frecuencia con la que se espera que compre un distribuidor. 'A'=Anually(Anual), 'S'=Semestrally(Semestral), 'Q'=Quaterlly(Trimestral)."
       data_type: BPCHAR(1)
 
     - name: first_order_year
@@ -348,7 +348,7 @@ schemas:
       data_type: VARCHAR(50)
 
     - name: gender
-      description: 'Género del vendedor. F=Female(Mujer), M=Male(Hombre)'
+      description: "Género del vendedor. 'F'=Female(Mujer), 'M'=Male(Hombre)"
       data_type: BPCHAR(1)
 
     - name: sales_person_flag
@@ -425,19 +425,19 @@ schemas:
       reference: sales.dim_product.product_key
 
     - name: reseller_key
-      description: 'Clave foránea que apunta a la tienda/distribuidor al que un vendedor le ha vendido el producto en la tabla `dim_reseller`. Tendrá un valor indicado únicamente para aquellos pedidos realizados por un vendedor para una tienda/distribuidor, indicadas en la columna `sales.fact_sales.sale_source` con el valor "reseller_sales", por el contrario, vendrá a NULL.'
+      description: "Clave foránea que apunta a la tienda/distribuidor al que un vendedor le ha vendido el producto en la tabla `dim_reseller`. Tendrá un valor indicado únicamente para aquellos pedidos realizados por un vendedor para una tienda/distribuidor, indicadas en la columna `sales.fact_sales.sale_source` con el valor 'reseller_sales', por el contrario, vendrá a NULL."
       data_type: INT4
       is_foreign_key: true
       reference: sales.dim_reseller.reseller_key
 
     - name: employee_key
-      description: 'Clave foránea que apunta al vendedor que ha vendido el producto a una tienda/distribuidor en la tabla `dim_sales_person`. Tendrá un valor indicado únicamente para aquellos pedidos realizados por un vendedor para una tienda/distribuidor, indicadas en la columna `sales.fact_sales.sale_source` con el valor "reseller_sales", por el contrario, vendrá a NULL.'
+      description: "Clave foránea que apunta al vendedor que ha vendido el producto a una tienda/distribuidor en la tabla `dim_sales_person`. Tendrá un valor indicado únicamente para aquellos pedidos realizados por un vendedor para una tienda/distribuidor, indicadas en la columna `sales.fact_sales.sale_source` con el valor 'reseller_sales', por el contrario, vendrá a NULL."
       data_type: INT4
       is_foreign_key: true
       reference: sales.dim_sales_person.employee_key
 
     - name: customer_key
-      description: 'Clave foránea que apunta al cliente al que se le ha vendido el producto online en la tabla `dim_customer`. Tendrá un valor indicado únicamente para aquellos pedidos realizados en línea por un cliente, indicadas en la columna `sales.fact_sales.sale_source` con el valor "internet_sales", por el contrario, vendrá a NULL.'
+      description: "Clave foránea que apunta al cliente al que se le ha vendido el producto online en la tabla `dim_customer`. Tendrá un valor indicado únicamente para aquellos pedidos realizados en línea por un cliente, indicadas en la columna `sales.fact_sales.sale_source` con el valor 'internet_sales', por el contrario, vendrá a NULL."
       data_type: INT4
       is_foreign_key: true
       reference: sales.dim_customer.customer_key
@@ -517,5 +517,5 @@ schemas:
       data_type: DATE
 
     - name: sale_source
-      description: 'Indicador de la fuente por la que ha sido realizado el pedido. reseller_sales=Pedido realizado por un vendedor para una tienda/distribuidor, internet_sales=Pedido realizado en línea por un cliente.'
+      description: "Indicador de la fuente por la que ha sido realizado el pedido. 'reseller_sales'=Pedido realizado por un vendedor para una tienda/distribuidor, 'internet_sales'=Pedido realizado en línea por un cliente."
       data_type: TEXT
