@@ -11,5 +11,5 @@ docker compose logs tfm-postgres-db
 docker compose logs tfm-chroma-db
 
 [give permission to entrypoint sh]
-dos2unix data/database/postgres/docker/restore_on_startup.sh
-chmod +x data/database/postgres/docker/restore_on_startup.sh
+dos2unix data/database/postgres/docker/entrypoint.sh
+chmod +x data/database/postgres/docker/entrypoint.sh
