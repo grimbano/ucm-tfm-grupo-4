@@ -96,52 +96,64 @@ Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar
 
         `uv lock` garantiza que `uv.lock` sea una representación precisa y reproducible de las dependencias de tu proyecto. Después de ejecutar `uv lock`, asegúrate de confirmar los cambios en `uv.lock` en Git, ya que es crucial para la reproducibilidad del entorno entre desarrolladores.
 
-## Configuración y Ejecución de la Base de Datos con Docker
+## Configuración y Ejecución de los Servicios con Docker
 
-Este proyecto utiliza Docker para gestionar la base de datos PostgreSQL, lo que facilita su configuración y garantiza un entorno consistente.
+Este proyecto utiliza **Docker** y **Docker Compose** para gestionar tanto la base de datos **PostgreSQL** como la base de datos vectorial **ChromaDB**. Esto facilita la configuración de ambos servicios y asegura un entorno de desarrollo consistente.
 
-La configuración de Docker para la base de datos se encuentra en la carpeta data/database/postgres/docker/. Dentro de esta carpeta, encontrarás los siguientes archivos:
+El archivo `docker-compose.yml`, que se encuentra en la raíz del repositorio, define y configura ambos servicios de manera independiente.
 
-* `docker-compose.yml`: Define los servicios de Docker, en este caso, el contenedor de PostgreSQL y cualquier servicio adicional relacionado con la base de datos.
+---
 
-* `.env.example`: Contiene variables de entorno de ejemplo para la configuración de PostgreSQL (como usuario, contraseña, nombre de la base de datos, etc.).
+### Preparación del Entorno
 
-Sigue estos pasos para levantar la base de datos:
+1. **Variables de Entorno (`.env`):**
+    El `docker-compose.yml` utiliza variables de entorno definidas en el archivo `.env` para la configuración de los servicios. Siguiendo los pasos indicados en la sección anterior, copia el archivo de ejemplo a la raíz del repositorio y rellena las variables necesarias.
 
-1. Navega a la carpeta de Docker de la base de datos:
-
-    ```bash
-    cd data/database/postgres/docker/
-    ```
-
-2. Copia y configura el archivo `.env`:
-    Al igual que con el `.env` principal del proyecto, debes crear un archivo `.env` para la base de datos a partir del ejemplo.
-
-    ```bash
-    cp .env.example .env
-    ```
-
-    Abre este nuevo archivo `.env` y ajusta las variables de entorno de PostgreSQL según sea necesario para tu entorno de desarrollo.
-
-    **Aclaración importante:** Cuando trabajes con la versión contenerizada de la base de datos, es crucial que la variable de entorno `DB_PORT` en tu archivo `.env` se establezca en `5433`. Esto se debe a que el contenedor de Docker mapea el puerto interno de PostgreSQL (5432) a un puerto diferente en tu máquina host para evitar conflictos con posibles instalaciones locales de PostgreSQL.
+    **Aclaración importante:** Cuando trabajes con la versión contenerizada de la base de datos, es crucial que la variable de entorno `DB_PORT` en tu archivo `.env` se establezca en `5433`. Esto se debe a que el contenedor de Docker mapea el puerto interno de PostgreSQL (`5432`) a un puerto diferente en tu máquina host para evitar conflictos con posibles instalaciones locales de PostgreSQL.
 
     `DB_PORT=5433`
 
-3. Asegúrate de que el script `restore_on_startup.sh` sea ejecutable (Solo para Linux/Mac):
+2. **Permisos de ejecución para el script:**
 
-    Si estás trabajando en un entorno Linux o macOS, es crucial que el script `restore_on_startup.sh` tenga permisos de ejecución para que Docker pueda ejecutarlo correctamente. En Windows, este paso no es necesario.
+    El script `entrypoint.sh` debe tener los permisos de ejecución correctos para que Docker pueda ejecutarlo. El script se encuentra en la ruta `data/database/postgres/docker/`.
 
-    ```bash
-    chmod +x restore_on_startup.sh
-    ```
+    * **Para Linux/macOS:**
 
-4. Levanta y restaura la base de datos:
+        ```Bash
+        dos2unix data/database/postgres/docker/entrypoint.sh
+        chmod +x data/database/postgres/docker/entrypoint.sh
+        ```
 
-    Ahora, puedes iniciar los servicios de Docker y restaurar la base de datos utilizando los siguientes comandos. El comando `docker compose down -v` se asegura de limpiar cualquier instancia anterior y sus volúmenes asociados, mientras que d`ocker compose run --rm db-restore` inicia el servicio de restauración de la base de datos.
+    * **Para Windows:**
 
-    ```bash
+        ```DOS
+        dos2unix data/database/postgres/docker/entrypoint.sh
+        ```
+
+        (El comando `chmod` no es necesario en Windows, ya que su sistema de permisos de archivos es diferente).
+
+---
+
+### Comandos Docker Compose
+
+Una vez que hayas configurado el entorno, puedes utilizar los siguientes comandos para gestionar los servicios de Docker:
+
+1. **Levantar los servicios:**
+
+    Utiliza el archivo `docker-compose.yml` para levantar los servicios de **PostgreSQL** y **ChromaDB** en segundo plano.
+
+    ```Bash
     docker compose down -v
-    docker compose run --rm db-restore
+    docker compose up -d
     ```
 
-    Estos comandos iniciarán el contenedor de PostgreSQL y ejecutarán cualquier script de restauración de datos que esté configurado en `docker-compose.yml`.
+    El comando `docker compose down -v` se asegura de detener y eliminar cualquier instancia anterior y sus volúmenes asociados, mientras que `docker compose up -d` construye y levanta los servicios definidos en el `docker-compose.yml`.
+
+2. **Ver el estado de los servicios:**
+
+    Para verificar que los servicios se están ejecutando correctamente, puedes revisar sus logs.
+
+    ```Bash
+    docker compose logs tfm-postgres-db
+    docker compose logs tfm-chroma-db
+    ```

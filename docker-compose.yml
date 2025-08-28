@@ -33,7 +33,7 @@ services:
       - .env
 
     ports:
-      - "${CHROMA_PORT}:${CHROMA_SERVER_HTTP_PORT}"
+      - "${CHROMA_LOCAL_PORT}:${CHROMA_SERVER_HTTP_PORT}"
     
     volumes:
       - ./data/embeddings/chroma:/data
