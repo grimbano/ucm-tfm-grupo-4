@@ -3383,6 +3383,15 @@ wheels = [
 ]
 
 [[package]]
+name = "sqlglot"
+version = "27.11.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/31/760f2bec991b592b12e2d0cc986605f251737e0a06d58f579d9133fdeb91/sqlglot-27.11.0.tar.gz", hash = "sha256:3f2958dc9875800846a89fd840a6b17e0694baae31719b87406bbf1d51091a3b", size = 5443357, upload-time = "2025-09-03T09:22:02.957Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/93/f3d9ad82bd919b3f3d726ef42ce50a58d73d71b1fe27ee8d0b3cd6f30573/sqlglot-27.11.0-py3-none-any.whl", hash = "sha256:1a30e9fa09394c6c3bb1b0537b25bf40d362878f1f6f2558f1b5820c27d1958a", size = 508986, upload-time = "2025-09-03T09:22:00.793Z" },
+]
+
+[[package]]
 name = "stack-data"
 version = "0.6.3"
 source = { registry = "https://pypi.org/simple" }
@@ -3630,6 +3639,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "regex" },
+    { name = "sqlglot" },
 ]
 
 [package.metadata]
@@ -3649,6 +3659,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "regex", specifier = ">=2025.7.34" },
+    { name = "sqlglot", specifier = ">=27.11.0" },
 ]
 
 [[package]]
