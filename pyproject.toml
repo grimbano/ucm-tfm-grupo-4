@@ -16,7 +16,7 @@ dependencies = [
     "openai==1.93.2",
     "pandas>=2.3.1",
     "pathlib>=1.0.1",
-    "psycopg2>=2.9.10",
+    "psycopg2-binary>=2.9.9",
     "python-dotenv>=1.1.1",
     "pyyaml>=6.0.2",
     "regex>=2025.7.34",
