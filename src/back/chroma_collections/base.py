@@ -200,6 +200,11 @@ class ExtendedChromaCollection:
         self._database = database or 'default_database'
         self._client = client
         self._relevance_score_fn = relevance_score_fn if relevance_score_fn else self.cosine_distance_relevance_score_fn
+
+        if not is_persistent_client and self._client is None:
+            self._client = chromadb.Client(
+                settings=chromadb.config.Settings(is_persistent=False)
+            )
         
         if reset_collection:
             if not self._reset_collection():

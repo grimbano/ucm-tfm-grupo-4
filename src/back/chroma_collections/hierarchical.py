@@ -51,7 +51,6 @@ class MdlHierarchicalChromaCollections:
 
     def __init__(
         self,
-
         collection_names: Tuple[str, str],
         embedding_function: Optional[Embeddings] = None,
         persist_directory: Optional[str] = None,
@@ -218,7 +217,8 @@ class MdlHierarchicalChromaCollections:
         tables_score_threshold: float = 0.75,
         k_columns: int = 10,
         columns_score_threshold: float = 0.75,
-        merge_results: bool = True
+        merge_results: bool = True,
+        show_relevance_score: bool = True
     ) -> Union[List[Dict[str, Any]], List[List[Dict[str, Any]]]]:
         """
         Performs a hierarchical similarity search with multiple queries.
@@ -243,13 +243,17 @@ class MdlHierarchicalChromaCollections:
             merge_results: A boolean flag. If True, the results from all queries are merged
                     into a single list of unique tables. If False, a list of results is returned,
                     where each member corresponds to a single query and contains its specific results.
+            show_relevance_score: A boolean flag. If False, relevance scores are not included 
+                    in the final output.
 
         Returns:
             - If `merge_results` is True, returns a list of dictionaries, where each
                 dictionary represents a unique table with its content, average relevance
-                score, and a list of its unique, relevant columns.
+                score (if `show_relevance_score` is True), and a list of its unique,
+                relevant columns.
             - If `merge_results` is False, returns a list of lists of dictionaries.
                 Each inner list corresponds to a query and contains its individual results.
+                The relevance scores are included only if `show_relevance_score` is True.
         """
         is_single_query = isinstance(queries, str)
         _queries = [queries] if is_single_query else queries
@@ -298,11 +302,16 @@ class MdlHierarchicalChromaCollections:
             
             multi_query_results.append(query_result)
             
-        return (
+        final_results = (
             self._merge_search_results(multi_query_results)
             if not is_single_query and merge_results else
             self._remove_ids(multi_query_results)
         )
+
+        if not show_relevance_score:
+            return self._remove_scores(final_results)
+        
+        return final_results
 
 
     def _remove_ids(
@@ -327,14 +336,13 @@ class MdlHierarchicalChromaCollections:
             value matches the type of the input list.
         """
         if not results:
-            return results
+            return []
         
-        is_single_query = (isinstance(results[0], list) and len(results) == 1)
+        is_single_query = isinstance(results[0], dict)
         _results = results
 
-        if isinstance(results[0], dict):
+        if is_single_query:
             _results = [results]
-            is_single_query = True
 
         updated_results = [
             [
@@ -451,4 +459,41 @@ class MdlHierarchicalChromaCollections:
         )
 
 
+    def _remove_scores(
+        self,
+        results: Union[List[Dict[str, Any]], List[List[Dict[str, Any]]]]
+    ) -> Union[List[Dict[str, Any]], List[List[Dict[str, Any]]]]:
+        """
+        Removes the 'relevance_score' field from the search results.
+
+        Args:
+            results: A list of search results, can be a single list or a nested list.
+
+        Returns:
+            A new list of results with the 'relevance_score' key removed.
+        """
+        if not results:
+            return []
+        
+        is_single_query = isinstance(results[0], dict)
+        _results = results
+
+        if is_single_query:
+            _results = [results]
+
+        updated_results = [
+            [
+                {
+                    HierarchicalKey.TABLE_SUMMARY.value: table_data[HierarchicalKey.TABLE_SUMMARY.value][HierarchicalKey.CONTENT.value],
+                    HierarchicalKey.COLUMNS.value: [
+                        column_data[HierarchicalKey.CONTENT.value]
+                        for column_data in table_data[HierarchicalKey.COLUMNS.value]
+                    ]
+                }
+                for table_data in query_result
+            ]
+            for query_result in _results
+        ]
+
+        return updated_results[0] if is_single_query else updated_results
 
