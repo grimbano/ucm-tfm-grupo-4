@@ -12,6 +12,7 @@ dependencies = [
     "langchain-chroma>=0.2.5",
     "langchain-community>=0.3.27",
     "langchain-openai>=0.3.29",
+    "langgraph>=0.6.6",
     "notebook>=7.4.4",
     "openai==1.93.2",
     "pandas>=2.3.1",
