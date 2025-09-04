@@ -73,6 +73,9 @@ Las fechas en `fact_sales` permiten derivar métricas de tiempo cruciales para e
 
 Para los informes de ventas, muchas veces es fundamental poder filtrar y agregar datos por **períodos estándar asociados a términos como "Este Año", "Año Pasado", "Acumulado del Año (YTD)" y la comparación "Año Actual vs. Año Pasado"**.
 
+**IMPORTANTE:**
+En todos los casos, se debe priorizar el uso del campo `order_date` de la tabla `fact_sales` para realizar cálculos de inteligencia temporal.
+
 - **Definiciones de Períodos Agregados:**
   - **Trimestre:** Período de tres meses. Un año natural se compone de cuatro trimestres (Q1: Ene-Mar, Q2: Abr-Jun, Q3: Jul-Sep, Q4: Oct-Dic).
   - **Semestre:** Período de seis meses. Un año natural se compone de dos semestres (H1: Ene-Jun, H2: Jul-Dic).
