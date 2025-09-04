@@ -14,7 +14,7 @@ from langchain.embeddings.base import Embeddings
 from langchain_chroma import Chroma
 import numpy as np
 
-from src.utils.customs import DocumentWithScore, MdlKey
+from src.utils.customs import DocumentWithScore, ChunkKey
 
 
 class ExtendedChromaCollection:
@@ -402,7 +402,7 @@ class ExtendedChromaCollection:
             A dictionary containing the deleted document IDs, documents, and metadatas.
         """
         _file_names = [file_names] if isinstance(file_names, str) else file_names
-        return self.delete_documents(where= {MdlKey.FILE_NAME.value: {'$in': _file_names}})
+        return self.delete_documents(where= {ChunkKey.FILE_NAME.value: {'$in': _file_names}})
 
 
     def add_documents(self, documents: List[Document], **kwargs: Any) -> IDs:
@@ -442,9 +442,9 @@ class ExtendedChromaCollection:
             IDs for the newly added documents.
         """
         file_names = {
-            doc.metadata.get(MdlKey.FILE_NAME.value) 
+            doc.metadata.get(ChunkKey.FILE_NAME.value) 
             for doc in documents 
-            if doc.metadata.get(MdlKey.FILE_NAME.value) 
+            if doc.metadata.get(ChunkKey.FILE_NAME.value) 
         }
 
         deleted_docs = self.delete_by_file_name(file_names= list(file_names))
@@ -469,9 +469,9 @@ class ExtendedChromaCollection:
             IDs for the newly added documents.
         """
         file_names = {
-            doc.metadata.get(MdlKey.FILE_NAME.value) 
+            doc.metadata.get(ChunkKey.FILE_NAME.value) 
             for doc in documents 
-            if doc.metadata.get(MdlKey.FILE_NAME.value) 
+            if doc.metadata.get(ChunkKey.FILE_NAME.value) 
         }
 
         deleted_docs = self.delete_by_file_name(file_names= list(file_names))
