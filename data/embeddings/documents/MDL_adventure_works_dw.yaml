@@ -505,15 +505,15 @@ schemas:
       data_type: NUMERIC
 
     - name: order_date
-      description: 'Fecha en la que el pedido fué creado.'
+      description: 'Fecha en la que el pedido fué creado. Se debe priorizar esta fecha por sobre cualquiera de las otras para realizar cualquier cálculo relacionado con ventas.'
       data_type: DATE
 
     - name: due_date
-      description: 'Fecha en la que el pedido fué entregado al cliente. NUNCA vendrá a NULL, dado que se trata de todos pedidos que ya han sido entregados.'
+      description: 'Fecha en la que el pedido fué entregado al cliente. Se debe priorizar solo en los casos que se quieran calcular tiempos de entrega. NUNCA vendrá a NULL, dado que se trata de todos pedidos que ya han sido entregados.'
       data_type: DATE
 
     - name: ship_date
-      description: 'Fecha en la que se envió el pedido al cliente. NUNCA vendrá a NULL, dado que se trata de todos pedidos que ya han sido entregados.'
+      description: 'Fecha en la que se envió el pedido al cliente. Se debe priorizar solo en los casos que se quieran calcular tiempos de preparación de pedidos. NUNCA vendrá a NULL, dado que se trata de todos pedidos que ya han sido entregados.'
       data_type: DATE
 
     - name: sale_source

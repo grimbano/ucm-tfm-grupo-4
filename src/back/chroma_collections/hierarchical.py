@@ -12,7 +12,7 @@ from langchain.embeddings.base import Embeddings
 
 import numpy as np
 
-from src.utils.customs import HierarchicalKey, MdlKey
+from src.utils.customs import HierarchicalKey, MdlKey, ChunkKey
 from .base import ExtendedChromaCollection
 
 
@@ -134,19 +134,19 @@ class MdlHierarchicalChromaCollections:
             )
     
 
-    def delete_by_file_name(self, file_name: str) -> Tuple[Dict[str, Any]]:
+    def delete_by_file_name(self, file_names: Union[str, List[str]]) -> Tuple[Dict[str, Any]]:
         """
         Deletes documents by file name across all managed collections.
 
         Args:
-            file_name: The name of the file whose documents should be deleted.
+            file_names: A single file name or a list of file names to delete.
 
         Returns:
             A tuple of dictionaries, where each dictionary contains the deleted
             document information for each collection.
         """
         deleted_docs = [
-            self._collections[name].delete_by_file_name(file_names= file_name)
+            self._collections[name].delete_by_file_name(file_names= file_names)
             for name in self._collection_names
         ]
 
@@ -199,9 +199,9 @@ class MdlHierarchicalChromaCollections:
         tables_documents, _ = documents
 
         file_names = list({
-            doc.metadata.get(MdlKey.FILE_NAME.value) 
+            doc.metadata.get(ChunkKey.FILE_NAME.value) 
             for doc in tables_documents
-            if doc.metadata.get(MdlKey.FILE_NAME.value) 
+            if doc.metadata.get(ChunkKey.FILE_NAME.value) 
         })
 
         deleted_docs = self.delete_by_file_name(file_names= file_names)
