@@ -23,6 +23,27 @@ class PostgresConfig(BaseSettings):
     )
 
 
+    def get_db_uri(self, schema_name: str) -> str:
+        """
+        Generates the database URI string with a specified schema.
+
+        Args:
+            schema_name (str): The name of the schema to set in the search path.
+
+        Returns:
+            str: The formatted database URI.
+        """
+        if not schema_name:
+            raise ValueError("A schema name must be provided to build the database URI.")
+
+        return (
+            f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
+            f"{self.POSTGRES_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"
+            f"?options=-csearch_path%3D{schema_name}"
+        )
+
+
+
 def get_pg_config(env_file_path: Optional[str] = None) -> PostgresConfig:
     """Initializes and returns the database configuration.
 
@@ -34,7 +55,8 @@ def get_pg_config(env_file_path: Optional[str] = None) -> PostgresConfig:
     Returns:
         PostgresConfig: A validated configuration object for the database.
     """
-    env_file = env_file_path if env_file_path is not None else '../data/database/postgres/docker/.env'
+    env_file = env_file_path if env_file_path is not None else '.env'
 
     dotenv.load_dotenv(dotenv.find_dotenv(env_file, raise_error_if_not_found=True))
     return PostgresConfig(_env_file= env_file)
+

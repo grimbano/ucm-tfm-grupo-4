@@ -9,7 +9,7 @@ from .agent_decision import (
     GradeRetrievedChunkEdge,
 )
 from .base import BaseAgenticConditionalEdge, BaseEdge
-from .fixed_routing import RouteContextRelevanceEdge
+from .fixed_routing import RouteBooleanStateVariableEdge
 from .parallel_processing import SendToParallelGradingEdge
 
 
@@ -18,7 +18,7 @@ __all__ = [
     'BaseEdge',
     'GradeChunkSummaryGenerationEdge',
     'GradeRetrievedChunkEdge',
-    'RouteContextRelevanceEdge',
+    'RouteBooleanStateVariableEdge',
     'SendToParallelGradingEdge',
 ]
 

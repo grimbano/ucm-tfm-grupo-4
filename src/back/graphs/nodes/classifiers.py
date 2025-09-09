@@ -12,10 +12,7 @@ class DefineUserQueryLanguageNode(BaseNode):
     """
 
     _agent_validation_Type = 'structured_output'
-    _required_state_vars = [
-        'user_query', 'language',
-        'context_generation_iterations'
-    ]
+    _required_state_vars = ['user_query', 'language']
     _output_property = 'language'
 
 
@@ -53,7 +50,6 @@ class DefineUserQueryLanguageNode(BaseNode):
             print("--- DEFINE USER QUERY LANGUAGE 🔣 ---")
             
             user_query = state['user_query']
-            context_generation_iterations = state.get('context_generation_iterations', 0)
             
             language = getattr(
                 agent_runnable.invoke({'user_query': user_query}),
@@ -62,7 +58,6 @@ class DefineUserQueryLanguageNode(BaseNode):
 
             return {
                 'language': language,
-                'context_generation_iterations': context_generation_iterations + 1,
             }
 
         return define_user_query_language

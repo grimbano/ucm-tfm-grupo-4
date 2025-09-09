@@ -1,5 +1,4 @@
 
-
 from typing import Dict, List, TypedDict
 
 
@@ -19,7 +18,13 @@ class MdlOutputState(TypedDict):
 
 class ContextGeneratorOutputState(TypedDict):
     language: str
+    db_name: str
+    schema_name: str
     relevant_context: bool
     context: str
     no_relevant_context_msg: str
 
+
+class QueryGeneratorOutputState(TypedDict):
+    sql_query: str
+    valid_query_generated: bool

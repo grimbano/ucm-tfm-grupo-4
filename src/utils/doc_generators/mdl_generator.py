@@ -22,12 +22,17 @@ class BaseMdlGenerator:
     results, and formatting them into a human-editable YAML structure.
     """
 
-    def __init__(self, base_query_path: str):
+    def __init__(
+        self,
+        base_query_path: str,
+        env_file_path: Optional[str] = None
+    ):
         """
         Initializes the generator with the path to the base SQL query file.
 
         Args:
             base_query_path: The file path to the SQL query.
+            env_file_path: The path to a specific .env file. Defaults to None.
 
         Raises:
             FileNotFoundError: If the file path does not exist.
@@ -48,7 +53,7 @@ class BaseMdlGenerator:
         
         self.base_query_path = base_query_path
         self.base_query = self._load_base_query(base_query_path)
-        self.__db_manager = BasePostgres()
+        self._db_manager = BasePostgres()
 
 
     def get_information_schema_data(
@@ -230,7 +235,7 @@ class BaseMdlGenerator:
 
         query_parameters = tuple(target_db_names + target_schema_names)
 
-        return self.__db_manager.execute_query(final_query, query_parameters)
+        return self._db_manager.execute_query(final_query, query_parameters)
 
 
     def _group_data_by_hierarchy(self, data: List[Dict]) -> defaultdict:

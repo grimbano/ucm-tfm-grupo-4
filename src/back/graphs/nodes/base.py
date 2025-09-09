@@ -172,7 +172,7 @@ class BaseNode(ABC):
         Raises:
             AttributeError: If the agent does not contain the required output.
         """
-        if self._output_property not in agent.structured_output.model_json_schema()['properties']:
+        if self._output_property and self._output_property not in agent.structured_output.model_json_schema()['properties']:
             raise AttributeError(f"The structured output must have a '{self._output_property}' field.")
 
 
@@ -340,3 +340,104 @@ class BaseRetrieveToolNode(BaseNode):
             
         return retrieve_queries
 
+
+
+class BaseMultiOutputAgentNode(BaseNode):
+    """
+    A unified base class for graph nodes that produce multiple outputs from an agent.
+
+    This class serves as a blueprint for nodes that require a structured agent 
+    output with multiple fields. It is an **abstract class** and cannot be 
+    instantiated directly. Instead, concrete node classes should inherit from it, 
+    define their specific `_required_state_vars` and `_output_properties`, and 
+    implement the `get_node_function` method to handle the specific logic of the node.
+    
+    This design ensures that any multi-output agent node adheres to the same 
+    validation and property-handling contract, promoting consistency across the 
+    system.
+    """
+
+    _agent_validation_Type = 'structured_output'
+    _output_properties: List[str] = None
+
+    def __init__(
+        self,
+        state_class: Type[Dict],
+        output_properties: List[str],
+        required_state_vars: Optional[List[str]] = None,
+        agent: Optional[BaseAgent] = None,
+    ):
+        """
+        Initializes the multi-output agent node.
+
+        Args:
+            state_class: The TypedDict class representing the graph state.
+            required_state_vars: A list with the names of the state variables that are
+                    required for the node's processing. It must include
+                    all `output_properties`.
+            agent: An instance of a BaseAgent. This agent must have a structured
+                    output defined.
+            output_properties: A list of strings with the names of the properties
+                    expected in the agent's structured output. This list
+                    is required for multi-output nodes.
+        
+        Raises:
+            ValueError: If `output_properties` is not a non-empty list.
+            ValueError: If any property in `output_properties` is not included
+                    in `required_state_vars`.
+        """
+        
+        if output_properties is None or not isinstance(output_properties, list) or not output_properties:
+            raise ValueError("A list of 'output_properties' is required for a multi-output node.")
+        self._output_properties = output_properties
+
+
+        if not required_state_vars:
+            required_state_vars = self._output_properties
+        else:
+            if not all(prop in required_state_vars for prop in self._output_properties):
+                raise ValueError("All 'output_properties' must be included in the 'required_state_vars' list.")
+            
+        super().__init__(
+            state_class= state_class,
+            required_state_vars= required_state_vars,
+            agent= agent,
+            output_property= None
+        )
+
+
+    @property
+    def output_properties(self) -> List[str]:
+        """
+        Returns the list of expected output properties.
+        """
+        return self._output_properties
+
+    @output_properties.setter
+    def output_properties(self, value: List[str]):
+        """
+        Sets the list of expected output properties with validation.
+        """
+        if not isinstance(value, list):
+            raise TypeError("output_properties must be a list.")
+        if not all(isinstance(item, str) for item in value):
+            raise TypeError("All items in output_properties must be strings.")
+        self._output_properties = value
+
+
+    @property
+    def required_state_vars(self) -> List[str]:
+        return self._required_state_vars
+
+    @required_state_vars.setter
+    def required_state_vars(self, value: List[str]):
+        if not isinstance(value, list):
+            raise TypeError("required_state_vars must be a list.")
+        if not all(isinstance(item, str) for item in value):
+            raise TypeError("All items in required_state_vars must be strings.")
+        
+        # CHANGE: Add validation that the output properties are a subset of the required state vars.
+        if self._output_properties and not all(prop in value for prop in self._output_properties):
+            raise ValueError("All output_properties must be included in the required_state_vars list.")
+        
+        self._required_state_vars = value

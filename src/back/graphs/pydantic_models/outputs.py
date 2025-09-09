@@ -1,4 +1,5 @@
 
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -35,6 +36,20 @@ class GlobalRetrievalGraderResult(BaseModel):
     """Boolean score for relevance check on business context to user query."""
     relevant_context: bool = Field(
         description="The business context is relevant to the user query, `true` or `false`"
+    )
+
+
+########## GENERATORS ##########
+
+class DbSchemaExtractionResult(BaseModel):
+    """
+    Structured output for extracting database and schema names.
+    """
+    db_name: str = Field(
+        description= "The name of the database where the data is stored. If not found, set to '[Not found]'."
+    )
+    schema_name: str = Field(
+        description= "The name of the schema within the database. If not found, set to '[Not found]'."
     )
 
 
