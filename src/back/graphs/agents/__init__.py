@@ -5,6 +5,7 @@ It contains all the agents presents in our NL-2-SQL system.
 
 from .base import BaseAgent, BaseRetrievalAgent
 from .classifiers import LanguageClassifier
+from .extractors import DbSchemaExtractor
 from .generators import (
     BusinessLogicSummarizer,
     ChunkSummaryGenerator,
@@ -31,6 +32,7 @@ __all__ = [
     'BusinessLogicRetriever',
     'BusinessLogicSummarizer',
     'ChunkSummaryGenerator',
+    'DbSchemaExtractor',
     'GlobalContextGenerator',
     'GlobalRetrievalGrader',
     'HallucinationGrader',

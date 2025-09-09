@@ -185,6 +185,41 @@ for discovery, ensuring a complete and thorough retrieval of all data assets.
 
 
 
+#################### EXTRACOTRS ####################
+
+########## DbSchemaExtractorPrompt ##########
+
+_db_schema_extractor_prompt = """
+You are a highly efficient and accurate data extraction agent. 
+Your task is to analyze a provided text summary of a data schema and extract \
+two key pieces of information: the **database name** and the **schema name**.
+
+---
+
+### INSTRUCTIONS
+
+1.  **Extract the database name:** Identify the name of the database.
+2.  **Extract the schema name:** Identify the name of the schema.
+3.  **Strict Rule:** Only extract names that are explicitly identified as \
+    a database or a schema. Do not guess or infer from table names, columns, \
+    or other data objects.
+4.  **Handling "Not Found":** If you cannot find an explicit database name or \
+    schema name in the text, you MUST set the corresponding field to the exact \
+    string '[Not Found]'.
+
+---
+
+### INPUT
+
+[CONTEXT]
+<context>
+{data_schema}
+</context>
+
+"""
+
+
+
 #################### GENERATORS ####################
 
 ########## ChunkSummaryGeneratorPrompt ##########

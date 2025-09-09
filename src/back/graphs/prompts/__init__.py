@@ -6,6 +6,7 @@ It contains all the prompts used by the agents in the differents graphs.
 from .base import BasePrompt
 from .classifiers import LanguageClassifierPrompt
 from .dynamic import _RETRIEVAL_GRADER_DYNAMIC_PROMPT_DICT
+from .extractors import DbSchemaExtractorPrompt
 from .generators import (
     ChunkSummaryGeneratorPrompt,
     BusinessLogicSummarizerPrompt,
@@ -29,6 +30,7 @@ __all__ = [
     'BusinessLogicRetrieverPrompt',
     'BusinessLogicSummarizerPrompt',
     'ChunkSummaryGeneratorPrompt',
+    'DbSchemaExtractorPrompt',
     'GlobalContextGeneratorPrompt',
     'GlobalRetrievalGraderPrompt',
     'HallucinationGraderPrompt',
