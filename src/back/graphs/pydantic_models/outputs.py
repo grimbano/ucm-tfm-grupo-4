@@ -1,5 +1,5 @@
 
-from typing import Optional
+from typing import List
 from pydantic import BaseModel, Field
 
 
@@ -38,8 +38,23 @@ class GlobalRetrievalGraderResult(BaseModel):
         description="The business context is relevant to the user query, `true` or `false`"
     )
 
+class QueryCoherenceGraderResult(BaseModel):
+    """
+    Determina si una query SQL es coherente con la intención del mensaje de usuario,
+    basándose en un resumen de alto nivel de las tablas.
+    """
+    coherent: bool = Field(
+        description="""
+        Un valor booleano que indica si la query SQL es 'coherente' (True)
+        con el mensaje del usuario, dada la información contextual.
+        Devuelve True si la query es correcta y resuelve la pregunta del usuario.
+        Devuelve False si la query es incorrecta, incompleta o no se alinea con el
+        mensaje del usuario o el contexto.
+        """
+    )
 
-########## GENERATORS ##########
+
+########## EXTRACTORS ##########
 
 class DbSchemaExtractionResult(BaseModel):
     """
@@ -50,6 +65,14 @@ class DbSchemaExtractionResult(BaseModel):
     )
     schema_name: str = Field(
         description= "The name of the schema within the database. If not found, set to '[Not found]'."
+    )
+
+class TablesExtractionResult(BaseModel):
+    """
+    Structured output for extracting table names from an SQL query.
+    """
+    table_names: List[str] = Field(
+        description= "The name of the tables presents in a SQL query. If not found, retrieve an empty list."
     )
 
 

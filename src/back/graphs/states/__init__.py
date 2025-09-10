@@ -11,13 +11,15 @@ from .input import (
     MainGraphState,
     MdlState,
     QueryGeneratorState,
+    QueryValidatorState,
 )
 from .output import (
     BusinessLogicOutputState,
     ContextGeneratorOutputState,
     ChunkProcessingOutputState,
     MdlOutputState,
-    QueryGeneratorOutputState
+    QueryGeneratorOutputState,
+    QueryValidatorOutputState,
 )
 
 
@@ -32,5 +34,7 @@ __all__ = [
     'MdlOutputState',
     'MdlState',
     'QueryGeneratorOutputState',
-    'QueryGeneratorState'
+    'QueryGeneratorState',
+    'QueryValidatorOutputState',
+    'QueryValidatorState',
 ]

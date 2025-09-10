@@ -17,6 +17,8 @@ from .outputs import (
     MdlSummarizerResult,
     NoRelevantContextGeneratorResult,
     RetrievalGraderResult,
+    TablesExtractionResult,
+    QueryCoherenceGraderResult,
 )
 
 
@@ -33,4 +35,6 @@ __all__ = [
     'MdlSummarizerResult',
     'NoRelevantContextGeneratorResult',
     'RetrievalGraderResult',
+    'TablesExtractionResult',
+    'QueryCoherenceGraderResult',
 ]
