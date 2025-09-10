@@ -185,7 +185,7 @@ for discovery, ensuring a complete and thorough retrieval of all data assets.
 
 
 
-#################### EXTRACOTRS ####################
+#################### EXTRACTORS ####################
 
 ########## DbSchemaExtractorPrompt ##########
 

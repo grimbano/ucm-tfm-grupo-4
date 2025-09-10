@@ -1,41 +1,29 @@
 #################### LIBRERIAS ####################
 
-from langchain.chat_models import init_chat_model
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI
-
 import os
 import re
 from dotenv import load_dotenv 
-from typing import Annotated, Optional, List, Dict, Any, NotRequired
-from langgraph.graph.state import CompiledStateGraph
-from typing_extensions import TypedDict
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field
 
 import sqlglot
 from sqlglot.errors import ParseError
 
+from langchain.chat_models import init_chat_model
+from langchain_core.tools import tool
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.state import CompiledStateGraph
+
+
 #################### IMPORTS de GASTON -> query_examples_retireval ####################
 
-import sys
-from pathlib import Path
-
-# Añadimos el directorio raíz del proyecto al path
-project_root = Path().resolve().parent
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
-
-from src.back.embeddings import GenAIExtendedEmbeddingFunction
-from src.back.chroma_collections import (
-    ContextEnricherChromaCollection,
-    MdlHierarchicalChromaCollections,
+from ..embeddings import GenAIExtendedEmbeddingFunction
+from ..chroma_collections import (
     ExamplesChromaCollection
 )
-from src.back.graphs.states import QueryGeneratorState, QueryGeneratorOutputState
+from .states import QueryGeneratorState, QueryGeneratorOutputState
 
-from pydantic import BaseModel, Field
 
 def get_query_generator_graph(model: str = 'gpt-4o') -> CompiledStateGraph[Optional[Any]]:
 

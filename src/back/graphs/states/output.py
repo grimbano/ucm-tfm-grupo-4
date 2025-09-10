@@ -1,5 +1,5 @@
 
-from typing import Dict, List, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict
 
 
 class ChunkProcessingOutputState(TypedDict):
@@ -28,3 +28,12 @@ class ContextGeneratorOutputState(TypedDict):
 class QueryGeneratorOutputState(TypedDict):
     sql_query: str
     valid_query_generated: bool
+
+
+class QueryValidatorOutputState(TypedDict):
+    sql_query: str
+    table_names: List[str]
+    tables_info: List[str]
+    query_results: List[Dict[str, Any]]
+    valid_query_execution: bool
+    query_validation_error_msg: Optional[str]

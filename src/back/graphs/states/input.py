@@ -1,6 +1,8 @@
 
 import operator
-from typing import Annotated, Dict, List, TypedDict
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
+
+from .auxs import DbStateVar
 
 
 class ChunkProcessingState(TypedDict):
@@ -65,6 +67,21 @@ class QueryGeneratorState(TypedDict):
     valid_query_generated: bool
 
 
+class QueryValidatorState(TypedDict):
+    user_query: str
+    context: str
+    db_name: str
+    schema_name: str
+    sql_query: str
+    db: Optional[DbStateVar]
+    table_names: List[str]
+    tables_info: List[str]
+    query_results: List[Dict[str, Any]]
+    query_validation_error_msg: Optional[str]
+    retries: int
+    valid_query_execution: bool
+
+
 class MainGraphState(TypedDict):
     user_query: str
     language: str
@@ -75,3 +92,8 @@ class MainGraphState(TypedDict):
     no_relevant_context_msg: str
     sql_query: str
     valid_query_generated: bool
+    table_names: List[str]
+    tables_info: List[str]
+    query_results: List[Dict[str, Any]]
+    valid_query_execution: bool
+    query_validation_error_msg: Optional[str]

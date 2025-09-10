@@ -13,6 +13,7 @@ from .rag import (
     MdlRetrievalGraph
 )
 from .query_generator import get_query_generator_graph
+from .query_validator import get_query_validator_graph
 
 
 __all__ = [
@@ -22,6 +23,7 @@ __all__ = [
     'ContextGeneratorGraph',
     'get_main_graph',
     'get_query_generator_graph',
+    'get_query_validator_graph',
     'ChunkProcessingGraph',
     'MdlRetrievalGraph',
 ]
