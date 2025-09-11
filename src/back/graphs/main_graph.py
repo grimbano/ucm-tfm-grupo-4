@@ -6,6 +6,7 @@ from langgraph.graph.state import CompiledStateGraph, START, END
 from .nodes import DefineUserQueryLanguageNode
 from .edges import RouteBooleanStateVariableEdge
 from .states import MainGraphState
+from .conclusions_generator import get_conclusions_generator_graph
 from .context_generator import ContextGeneratorGraph
 from .query_generator import get_query_generator_graph
 from .query_validator import get_query_validator_graph
@@ -35,6 +36,10 @@ def get_main_graph() -> CompiledStateGraph[Optional[Any]]:
         'query_validator',
         get_query_validator_graph()
     )
+    workflow.add_node(
+        'conclusions_generator',
+        get_conclusions_generator_graph()
+    )
 
     workflow.add_edge(START, 'detect_user_query_language')
     workflow.add_edge('detect_user_query_language', 'context_generator')
@@ -62,7 +67,19 @@ def get_main_graph() -> CompiledStateGraph[Optional[Any]]:
             'exit': END
         }
     )
-    workflow.add_edge('query_validator', END)
+    workflow.add_conditional_edges(
+        'query_validator',
+        RouteBooleanStateVariableEdge(
+            'valid_query_execution',
+            'continue',
+            'exit'
+        ).get_edge_function(),
+        {
+            'continue': 'conclusions_generator',
+            'exit': END
+        }
+    )
+    workflow.add_edge('conclusions_generator', END)
 
     compiled_graph = workflow.compile()
     print(f"--- MAIN GRAPH COMPILED SUCCESSFULLY ✅ ---")

@@ -37,3 +37,16 @@ class QueryValidatorOutputState(TypedDict):
     query_results: List[Dict[str, Any]]
     valid_query_execution: bool
     query_validation_error_msg: Optional[str]
+
+
+class ConclusionsGeneratorOutputState(TypedDict):
+    nl_output: str
+    sql_explanation: str
+    graphics_json: str
+
+
+class MainGraphOutputState(TypedDict):
+    global_execution_ok: bool
+    nl_output: str
+    sql_explanation: str
+    graphics_json: Optional[str]

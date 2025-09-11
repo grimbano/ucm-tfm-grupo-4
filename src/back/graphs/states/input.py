@@ -82,6 +82,17 @@ class QueryValidatorState(TypedDict):
     valid_query_execution: bool
 
 
+class ConclusionsGeneratorState(TypedDict):
+    user_query: str
+    sql_query: str
+    language: str
+    query_results: str
+    graphs_retries: int
+    nl_output: str
+    sql_explanation: str
+    graphics_json: str
+
+
 class MainGraphState(TypedDict):
     user_query: str
     language: str
@@ -97,3 +108,6 @@ class MainGraphState(TypedDict):
     query_results: List[Dict[str, Any]]
     valid_query_execution: bool
     query_validation_error_msg: Optional[str]
+    nl_output: str
+    sql_explanation: str
+    graphics_json: Optional[str]
