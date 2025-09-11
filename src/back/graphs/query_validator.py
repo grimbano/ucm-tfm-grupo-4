@@ -33,6 +33,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
         model_provider= 'azure_openai',
         model= 'gpt-4o',
         temperature= 0,
+        max_tokens=2048
     )
 
 

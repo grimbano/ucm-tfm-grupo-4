@@ -7,6 +7,7 @@ in any graph or sub-graph of our NL-2-SQL system.
 from .input import (
     BusinessLogicState, 
     ChunkProcessingState,
+    ConclusionsGeneratorState,
     ContextGeneratorState,
     MainGraphState,
     MdlState,
@@ -15,6 +16,7 @@ from .input import (
 )
 from .output import (
     BusinessLogicOutputState,
+    ConclusionsGeneratorOutputState,
     ContextGeneratorOutputState,
     ChunkProcessingOutputState,
     MdlOutputState,
@@ -28,6 +30,8 @@ __all__ = [
     'BusinessLogicState',
     'ChunkProcessingOutputState',
     'ChunkProcessingState',
+    'ConclusionsGeneratorOutputState',
+    'ConclusionsGeneratorState',
     'ContextGeneratorOutputState',
     'ContextGeneratorState',
     'MainGraphState',
