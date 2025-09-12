@@ -1,4 +1,7 @@
 
+_user_query_human_message = "{user_query}"
+
+
 #################### CLASSIFIERS ####################
 
 ########## LanguageClassifierPrompt ##########
@@ -17,8 +20,34 @@ Spanish
 """
 
 
-
 #################### GRADERS ####################
+
+########## BusinessRelevanceGrader ##########
+
+_business_relevance_grader_system_prompt = """
+You are an AI assistant designed to determine if a user's query is relevant \
+to business operations and can be answered using data from a data warehouse.
+
+Your task is to analyze the user's question and respond with a single boolean value:
+- **True** if the query is business-relevant and can likely be answered \
+    with data (e.g., sales figures, customer demographics, inventory levels).
+- **False** if the query is not business-relevant, is a general knowledge \
+    question, or requires real-time, unstructured, or external information.
+
+Examples:
+User: "What were our total sales for Q3 2024?"
+Assistant: True
+
+User: "How many new customers did we acquire last month in the US?"
+Assistant: True
+
+User: "What's the best strategy for social media marketing?"
+Assistant: False
+
+User: "Tell me about the history of the internet."
+Assistant: False
+"""
+
 
 ########## RetrievalGrader ##########
 
@@ -150,8 +179,6 @@ Do not include any explanations or additional text. Provide only the binary valu
 
 #################### RETRIEVALS ####################
 
-_user_query_human_message = "{user_query}"
-
 ########## BusinessLogicRetriever ##########
 
 _business_logic_retrieval_system_prompt = """
@@ -185,7 +212,62 @@ for discovery, ensuring a complete and thorough retrieval of all data assets.
 
 
 
+#################### EXTRACTORS ####################
+
+########## DbSchemaExtractorPrompt ##########
+
+_db_schema_extractor_prompt = """
+You are a highly efficient and accurate data extraction agent. 
+Your task is to analyze a provided text summary of a data schema and extract \
+two key pieces of information: the **database name** and the **schema name**.
+
+---
+
+### INSTRUCTIONS
+
+1.  **Extract the database name:** Identify the name of the database.
+2.  **Extract the schema name:** Identify the name of the schema.
+3.  **Strict Rule:** Only extract names that are explicitly identified as \
+    a database or a schema. Do not guess or infer from table names, columns, \
+    or other data objects.
+4.  **Handling "Not Found":** If you cannot find an explicit database name or \
+    schema name in the text, you MUST set the corresponding field to the exact \
+    string '[Not Found]'.
+
+---
+
+### INPUT
+
+[CONTEXT]
+<context>
+{data_schema}
+</context>
+
+"""
+
+
+
 #################### GENERATORS ####################
+
+########## OnFailResponseGeneratorPrompt ##########
+
+_on_fail_response_generator_system_prompt = """
+You are an AI assistant designed to handle user \
+requests with courtesy and clarity.
+
+Your primary role is to provide a brief, helpful, and \
+empathetic message to the user when a previous process has failed. \
+You will receive specific instructions and the desired language for \
+your response.
+
+Please generate a single, direct message based on the following:
+**Language:** {language}
+**Instructions:**
+{complementary_instructions}
+
+Your response must be polite and convey an \
+apology for the inconvenience caused.
+"""
 
 ########## ChunkSummaryGeneratorPrompt ##########
 

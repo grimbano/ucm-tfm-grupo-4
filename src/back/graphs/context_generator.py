@@ -5,10 +5,10 @@ from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph, START, END
 
 from .base import BaseGraph
-from .edges import BaseEdge, RouteContextRelevanceEdge
+from .edges import BaseEdge, RouteBooleanStateVariableEdge
 from .nodes import (
     BaseNode,
-    DefineUserQueryLanguageNode,
+    ExtractDbSchemaNode,
     GenerateGlobalContextNode,
     GenerateNoContextResponseNode,
     GradeContextSummariesNode
@@ -30,27 +30,26 @@ class ContextGeneratorGraph(BaseGraph):
     from multiple retrieval-augmented generation (RAG) sources.
 
     The graph's workflow includes:
-    1. Detecting the user query's language.
-    2. Retrieving and summarizing business logic and data schema information
+    1. Retrieving and summarizing business logic and data schema information
         in parallel.
-    3. Grading the generated summaries for relevance and hallucinations.
-    4. If relevant, generating a final, consolidated global context.
-    5. If not relevant, generating a "no relevance" response.
+    2. Grading the generated summaries for relevance and hallucinations.
+    3. If relevant, generating a final, consolidated global context.
+    4. If not relevant, generating a "no relevance" response.
     """
 
-    _DETECT_LANGUAGE_STATE = 'detect_user_query_language'
-    _BUSINESS_LOGIC_STATE = 'get_business_logic_summary'
-    _DATA_SCHEMA_STATE = 'get_data_schema_summary'
-    _GRADE_SUMMARIES_STATE = 'grade_context_summaries'
-    _GENERATE_GLOBAL_CONTEXT_STATE = 'generate_global_context'
-    _NO_RELEVANCE_RESPONSE_STATE = 'generate_no_relevance_response'
+    _BUSINESS_LOGIC_NODE = 'get_business_logic_summary'
+    _DATA_SCHEMA_NODE = 'get_data_schema_summary'
+    _EXTRACT_DB_INFO_NODE = 'extract_db_info'
+    _GRADE_SUMMARIES_NODE = 'grade_context_summaries'
+    _GENERATE_GLOBAL_CONTEXT_NODE = 'generate_global_context'
+    _NO_RELEVANCE_RESPONSE_NODE = 'generate_no_relevance_response'
 
 
     def __init__(
         self,
-        detect_language_node: Optional[BaseNode] = None,
         business_logic_node: Optional[BaseRetrievalGraph] = None,
         data_schema_node: Optional[BaseRetrievalGraph] = None,
+        extract_db_info_node: Optional[ExtractDbSchemaNode] = None,
         grade_summaries_node: Optional[BaseNode] = None,
         global_context_node: Optional[BaseNode] = None,
         no_relevance_node: Optional[BaseNode] = None,
@@ -66,9 +65,9 @@ class ContextGeneratorGraph(BaseGraph):
         implementations if none are provided.
 
         Args:
-            detect_language_node: An optional node to detect the language of the query.
             business_logic_node: An optional pre-initialized graph for business logic retrieval.
             data_schema_node: An optional pre-initialized graph for data schema retrieval.
+            extract_db_info_node: An optional pre-initialized graph for db and schema names extraction.
             grade_summaries_node: An optional node to grade the relevance of retrieved summaries.
             global_context_node: An optional node to generate the final consolidated context.
             no_relevance_node: An optional node to handle cases with no relevant retrieved context.
@@ -86,10 +85,6 @@ class ContextGeneratorGraph(BaseGraph):
             output_schema= output_schema or ContextGeneratorOutputState,
         )
 
-        self._detect_language_node = (
-            detect_language_node
-            or DefineUserQueryLanguageNode(self.state_schema)
-        )
 
         self._business_logic_node = (
             business_logic_node
@@ -99,6 +94,11 @@ class ContextGeneratorGraph(BaseGraph):
         self._data_schema_node = (
             data_schema_node
             or MdlRetrievalGraph()
+        )
+
+        self._extract_db_info_node = (
+            extract_db_info_node
+            or ExtractDbSchemaNode(self.state_schema)
         )
 
         self._grade_summaries_node = (
@@ -118,25 +118,12 @@ class ContextGeneratorGraph(BaseGraph):
 
         self._check_relevance_edge = (
             check_relevance_edge
-            or RouteContextRelevanceEdge(
+            or RouteBooleanStateVariableEdge(
                 relevance_state_variable= GradeContextSummariesNode._output_property,
-                is_relevant_next_step= self._GENERATE_GLOBAL_CONTEXT_STATE,
-                no_relevance_next_step= self._NO_RELEVANCE_RESPONSE_STATE
+                is_relevant_next_step= 'relevant',
+                no_relevance_next_step= 'not_relevant'
             )
         )
-
-
-    @property
-    def detect_language_node(self) -> BaseNode:
-        """Getter for the detect_language_node."""
-        return self._detect_language_node
-
-    @detect_language_node.setter
-    def detect_language_node(self, value: BaseNode):
-        """Setter with validation for the detect_language_node."""
-        if not isinstance(value, BaseNode):
-            raise TypeError("'detect_language_node' must be a BaseNode instance.")
-        self._detect_language_node = value
 
 
     @property
@@ -163,6 +150,19 @@ class ContextGeneratorGraph(BaseGraph):
         if not isinstance(value, BaseRetrievalGraph):
             raise TypeError("'data_schema_node' must be a BaseRetrievalGraph instance.")
         self._data_schema_node = value
+
+
+    @property
+    def extract_db_info_node(self) -> ExtractDbSchemaNode:
+        """Getter for the extract_db_info_node."""
+        return self._extract_db_info_node
+
+    @extract_db_info_node.setter
+    def extract_db_info_node(self, value: ExtractDbSchemaNode):
+        """Setter with validation for the extract_db_info_node."""
+        if not isinstance(value, ExtractDbSchemaNode):
+            raise TypeError("'extract_db_info_node' must be a ExtractDbSchemaNode instance.")
+        self._extract_db_info_node = value
 
 
     @property
@@ -205,15 +205,15 @@ class ContextGeneratorGraph(BaseGraph):
 
 
     @property
-    def check_relevance_edge(self) -> RouteContextRelevanceEdge:
+    def check_relevance_edge(self) -> RouteBooleanStateVariableEdge:
         """Getter for the check_relevance_edge."""
         return self._check_relevance_edge
 
     @check_relevance_edge.setter
-    def check_relevance_edge(self, value: RouteContextRelevanceEdge):
+    def check_relevance_edge(self, value: RouteBooleanStateVariableEdge):
         """Setter with validation for the check_relevance_edge."""
-        if not isinstance(value, RouteContextRelevanceEdge):
-            raise TypeError("'check_relevance_edge' must be a RouteContextRelevanceEdge instance.")
+        if not isinstance(value, RouteBooleanStateVariableEdge):
+            raise TypeError("'check_relevance_edge' must be a RouteBooleanStateVariableEdge instance.")
         self._check_relevance_edge = value
 
 
@@ -234,52 +234,51 @@ class ContextGeneratorGraph(BaseGraph):
         )
 
 
-        workflow.add_node(
-            self._DETECT_LANGUAGE_STATE,
-            self.detect_language_node.get_node_function()
-        )
-
         if self.business_logic_node and self.data_schema_node:
             workflow.add_node(
-                self._BUSINESS_LOGIC_STATE,
+                self._BUSINESS_LOGIC_NODE,
                 self.business_logic_node.get_compiled_graph()
             )
             workflow.add_node(
-                self._DATA_SCHEMA_STATE,
+                self._DATA_SCHEMA_NODE,
                 self.data_schema_node.get_compiled_graph()
             )
         else:
             raise ValueError("Both business logic and data schema graphs must be provided.")
         
         workflow.add_node(
-            self._GRADE_SUMMARIES_STATE,
+            self._EXTRACT_DB_INFO_NODE,
+            self.extract_db_info_node.get_node_function()
+        )
+        workflow.add_node(
+            self._GRADE_SUMMARIES_NODE,
             self.grade_summaries_node.get_node_function()
         )
         workflow.add_node(
-            self._GENERATE_GLOBAL_CONTEXT_STATE,
+            self._GENERATE_GLOBAL_CONTEXT_NODE,
             self.global_context_node.get_node_function()
         )
         workflow.add_node(
-            self._NO_RELEVANCE_RESPONSE_STATE,
+            self._NO_RELEVANCE_RESPONSE_NODE,
             self.no_relevance_node.get_node_function()
         )
 
 
-        workflow.add_edge(START, self._DETECT_LANGUAGE_STATE)
-        workflow.add_edge(self._DETECT_LANGUAGE_STATE, self._BUSINESS_LOGIC_STATE)
-        workflow.add_edge(self._DETECT_LANGUAGE_STATE, self._DATA_SCHEMA_STATE)
-        workflow.add_edge(self._BUSINESS_LOGIC_STATE, self._GRADE_SUMMARIES_STATE)
-        workflow.add_edge(self._DATA_SCHEMA_STATE, self._GRADE_SUMMARIES_STATE)
+        workflow.add_edge(START, self._BUSINESS_LOGIC_NODE)
+        workflow.add_edge(START, self._DATA_SCHEMA_NODE)
+        workflow.add_edge(self._BUSINESS_LOGIC_NODE, self._EXTRACT_DB_INFO_NODE)
+        workflow.add_edge(self._DATA_SCHEMA_NODE, self._EXTRACT_DB_INFO_NODE)
+        workflow.add_edge(self._EXTRACT_DB_INFO_NODE, self._GRADE_SUMMARIES_NODE)
         workflow.add_conditional_edges(
-            source= self._GRADE_SUMMARIES_STATE,
+            source= self._GRADE_SUMMARIES_NODE,
             path= self.check_relevance_edge.get_edge_function(),
             path_map= {
-                self.check_relevance_edge.is_relevant_next_step: self._GENERATE_GLOBAL_CONTEXT_STATE,
-                self.check_relevance_edge.no_relevance_next_step: self._NO_RELEVANCE_RESPONSE_STATE
+                'relevant': self._GENERATE_GLOBAL_CONTEXT_NODE,
+                'not_relevant': self._NO_RELEVANCE_RESPONSE_NODE,
             }
         )
-        workflow.add_edge(self._GENERATE_GLOBAL_CONTEXT_STATE, END)
-        workflow.add_edge(self._NO_RELEVANCE_RESPONSE_STATE, END)
+        workflow.add_edge(self._GENERATE_GLOBAL_CONTEXT_NODE, END)
+        workflow.add_edge(self._NO_RELEVANCE_RESPONSE_NODE, END)
 
 
         compiled_graph = workflow.compile()

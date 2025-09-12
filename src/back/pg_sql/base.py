@@ -26,7 +26,7 @@ class BasePostgres:
         self.__db_config = get_pg_config(env_file_path).model_dump()
 
 
-    def __get_connection(self, port: Optional[int] = None) -> psycopg2.connect:
+    def get_connection(self, port: Optional[int] = None) -> psycopg2.connect:
         """Establishes and returns a database connection.
         
         This private method handles the connection logic, allowing for a temporary
@@ -78,7 +78,7 @@ class BasePostgres:
                 raise ValueError(f"Invalid command found: '{first_word}'. Only DDL/DML commands are allowed.")
 
         try:
-            with self.__get_connection(port) as connection:
+            with self.get_connection(port) as connection:
                 with connection.cursor() as cursor:
                     for command in commands:
                         cursor.execute(command)
@@ -117,7 +117,7 @@ class BasePostgres:
         query_results: List[Dict[str, Any]] = []
 
         try:
-            with self.__get_connection(port) as connection:
+            with self.get_connection(port) as connection:
                 with connection.cursor(cursor_factory=RealDictCursor) as cursor:
                     if params:
                         cursor.execute(query, params)

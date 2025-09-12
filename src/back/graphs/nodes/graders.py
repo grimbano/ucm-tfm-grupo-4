@@ -2,7 +2,76 @@
 from typing import Any, Callable, Dict
 
 from .base import BaseNode
-from ..agents import GlobalRetrievalGrader
+from ..agents import (
+    BusinessRelevanceGrader,
+    GlobalRetrievalGrader
+)
+
+
+
+class GradeBusinessRelevanceNode(BaseNode):
+    """
+    A node that grades the relevance of an user's query for a business data warehouse context.
+
+    This class specializes `BaseNode` to evaluate if the user's query
+    is relevant for a business data warehouse information context.
+    """
+
+    _agent_validation_Type = 'structured_output'
+    _required_state_vars = [
+        'user_query',
+        'relevant_question',
+    ]
+    _output_property  = 'relevant_question'
+
+
+    def get_default_agent(self) -> BusinessRelevanceGrader:
+        """
+        Provides a new default business relevance grader agent for this node.
+        
+        Returns:
+            A new instance of BusinessRelevanceGrader.
+        """
+        return BusinessRelevanceGrader()
+
+
+    def get_node_function(self) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+        """
+        Returns the callable function for this graph node.
+
+        Returns:
+            A function that takes the state dictionary and returns an updated state.
+        """
+
+        agent_runnable = self.agent.get_runnable()
+
+        def grade_business_relevance_node(state: Dict[str, Any]) -> Dict[str, Any]:
+            """
+            Determines whether the user's query is relevant fro a business data warehouse information context.
+
+            Args:
+                state: The current graph state.
+
+            Returns:
+                An updated state dictionary containing the relevance grading result.
+            """
+            print("--- GRADE BUSINESS RELEVANCE 🏢 ---")
+            
+            user_query = state['user_query']
+
+            relevant_question = getattr(
+                agent_runnable.invoke({
+                    'user_query': user_query,
+                }),
+                self.output_property
+            )
+
+            return {
+                'relevant_question': relevant_question,
+            }
+
+        return grade_business_relevance_node
+
 
 
 
@@ -44,7 +113,7 @@ class GradeContextSummariesNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
 
-        def grade_context_summaries(state: Dict[str, Any]) -> Dict[str, Any]:
+        def grade_context_summaries_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Determines whether the generation is grounded in the document and informative for the question.
 
@@ -73,5 +142,5 @@ class GradeContextSummariesNode(BaseNode):
                 'relevant_context': relevant_context,
             }
 
-        return grade_context_summaries
+        return grade_context_summaries_node
 

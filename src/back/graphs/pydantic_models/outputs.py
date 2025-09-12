@@ -1,4 +1,5 @@
 
+from typing import List
 from pydantic import BaseModel, Field
 
 
@@ -12,6 +13,15 @@ class LanguageClassifierResult(BaseModel):
 
 
 ########## GRADERS ##########
+
+class BusinessRelevanceGraderResult(BaseModel):
+    """
+    Boolean score to determine if a query is relevant to 
+    business and can be answered with a data warehouse.
+    """
+    relevant_question: bool = Field(
+        description="The query is business-relevant and answerable by data, `true` or `false`."
+    )
 
 class RetrievalGraderResult(BaseModel):
     """Boolean score for relevance check on retrieved documents."""
@@ -37,8 +47,51 @@ class GlobalRetrievalGraderResult(BaseModel):
         description="The business context is relevant to the user query, `true` or `false`"
     )
 
+class QueryCoherenceGraderResult(BaseModel):
+    """
+    Determina si una query SQL es coherente con la intención del mensaje de usuario,
+    basándose en un resumen de alto nivel de las tablas.
+    """
+    coherent: bool = Field(
+        description="""
+        Un valor booleano que indica si la query SQL es 'coherente' (True)
+        con el mensaje del usuario, dada la información contextual.
+        Devuelve True si la query es correcta y resuelve la pregunta del usuario.
+        Devuelve False si la query es incorrecta, incompleta o no se alinea con el
+        mensaje del usuario o el contexto.
+        """
+    )
+
+
+########## EXTRACTORS ##########
+
+class DbSchemaExtractionResult(BaseModel):
+    """
+    Structured output for extracting database and schema names.
+    """
+    db_name: str = Field(
+        description= "The name of the database where the data is stored. If not found, set to '[Not found]'."
+    )
+    schema_name: str = Field(
+        description= "The name of the schema within the database. If not found, set to '[Not found]'."
+    )
+
+class TablesExtractionResult(BaseModel):
+    """
+    Structured output for extracting table names from an SQL query.
+    """
+    table_names: List[str] = Field(
+        description= "The name of the tables presents in a SQL query. If not found, retrieve an empty list."
+    )
+
 
 ########## GENERATORS ##########
+
+class OnFailResponseGeneratorResult(BaseModel):
+    """The final message to be shown to the user when a process has failed."""
+    nl_output: str = Field(
+        description="A polite and clear message explaining why the request could not be fulfilled."
+    )
 
 class ChunkSummaryGeneratorResult(BaseModel):
     """Relevant content generated from bringed context based in user query."""

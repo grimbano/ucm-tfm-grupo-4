@@ -25,7 +25,7 @@ llm_retrievals = init_chat_model(
 
 llm_generators = init_chat_model(
     model_provider= 'azure_openai',
-    model= 'gpt-4o',
+    model= 'gpt-4.1',
     temperature= 0,
     max_tokens= 2000
 )

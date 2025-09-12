@@ -22,7 +22,7 @@ class SetRetrievalGradeOutputKoNode:
             containing the '[NO RELEVANT CONTENT]' message.
         """
 
-        def set_retrieval_grade_output_ko(state: Dict[str, Any]) -> Dict[str, List[str]]:
+        def set_retrieval_grade_output_ko_node(state: Dict[str, Any]) -> Dict[str, List[str]]:
             """
             Sets the generation output to a 'no relevant content' message.
 
@@ -37,5 +37,5 @@ class SetRetrievalGradeOutputKoNode:
                 'generation': ['[NO RELEVANT CONTENT]']
             }
         
-        return set_retrieval_grade_output_ko
+        return set_retrieval_grade_output_ko_node
 
