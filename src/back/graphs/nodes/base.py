@@ -228,7 +228,7 @@ class BaseGenerateSubQueriesNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
 
-        def generate_sub_queries(state: Dict[str, Any]) -> Dict[str, Any]:
+        def generate_sub_queries_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Create relevant sub-queries for the user question to improve retrieval.
 
@@ -255,7 +255,7 @@ class BaseGenerateSubQueriesNode(BaseNode):
                 'retieval_iterations': retieval_iterations + 1,
             }
 
-        return generate_sub_queries
+        return generate_sub_queries_node
 
 
 
@@ -319,7 +319,7 @@ class BaseRetrieveToolNode(BaseNode):
         This method is now a concrete implementation, providing the common
         retrieval logic for all subclasses.
         """
-        def retrieve_queries(state: Dict[str, Any]) -> Dict[str, Any]:
+        def retrieve_queries_node(state: Dict[str, Any]) -> Dict[str, Any]:
             print(f"--- {self.entity_name.upper()} RETRIEVE TOOL 🛠️ ---")
             queries = state['sub_queries']
             
@@ -338,7 +338,7 @@ class BaseRetrieveToolNode(BaseNode):
                 self.retrieval_result_key: retrieval_results
             }
             
-        return retrieve_queries
+        return retrieve_queries_node
 
 
 

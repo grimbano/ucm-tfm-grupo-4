@@ -25,7 +25,7 @@ from ..chroma_collections import (
 from .states import QueryGeneratorState, QueryGeneratorOutputState
 
 
-def get_query_generator_graph(model: str = 'gpt-4o') -> CompiledStateGraph[Optional[Any]]:
+def get_query_generator_graph(model: str = 'gpt-4.1') -> CompiledStateGraph[Optional[Any]]:
 
     #################### SETTINGS ####################
     load_dotenv()       #Cargo las variables del archivo .env

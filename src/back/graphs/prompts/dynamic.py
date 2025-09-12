@@ -24,3 +24,22 @@ _RETRIEVAL_GRADER_DYNAMIC_PROMPT_DICT = {
     }
 }
 
+
+_NL_OUTPUT_GENERATOR_DYNAMIC_PROMPT_DICT = {
+    'no_relevant_question': (
+        "Instruct the model to explain that the user's question is outside the scope "
+        "of what can be answered. The model should specify that it can only provide "
+        "information related to business data, such as sales figures, customer "
+        "statistics, or inventory."
+    ),
+    'no_sql_query_generated': (
+        "Instruct the model to apologize and explain that it was unable to generate "
+        "the necessary query to retrieve data. It should politely suggest that the "
+        "user try again later or rephrase their question."
+    ),
+    'query_execution_error': (
+        "Instruct the model to apologize and state that it was unable to retrieve the data "
+        "due to a technical error. It should politely suggest that the user try again "
+        "later or rephrase their question."
+    )
+}
