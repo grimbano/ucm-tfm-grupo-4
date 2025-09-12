@@ -2,14 +2,18 @@
 from typing import Any, Callable, Dict, List, Optional, Type
 
 from .base import BaseNode
-from ..prompts import _RETRIEVAL_GRADER_DYNAMIC_PROMPT_DICT
+from ..prompts import (
+    _RETRIEVAL_GRADER_DYNAMIC_PROMPT_DICT,
+    _NL_OUTPUT_GENERATOR_DYNAMIC_PROMPT_DICT,
+)
 from ..agents import (
     BaseAgent,
     ChunkSummaryGenerator,
     BusinessLogicSummarizer,
     MdlSummarizer,
     GlobalContextGenerator,
-    NoRelevantContextGenerator
+    NoRelevantContextGenerator,
+    OnFailResponseGenerator
 )
 
 
@@ -89,7 +93,7 @@ class SummarizeChunkNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
 
-        def summarize_chunk(state: Dict[str, Any]) -> Dict[str, Any]:
+        def summarize_chunk_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Generate relevant content for a question based on a given context.
             
@@ -138,7 +142,7 @@ class SummarizeChunkNode(BaseNode):
                 'generate_iterations': generate_iterations + 1
             }
         
-        return summarize_chunk
+        return summarize_chunk_node
 
 
 
@@ -178,7 +182,7 @@ class SummarizeBusinessLogicNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
 
-        def summarize_business_logic(state: Dict[str, Any]) -> Dict[str, Any]:
+        def summarize_business_logic_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Consolidates and summarizes business logic context.
 
@@ -218,7 +222,7 @@ class SummarizeBusinessLogicNode(BaseNode):
                 'business_logic': business_logic_summary
             }
         
-        return summarize_business_logic
+        return summarize_business_logic_node
 
 
 
@@ -259,7 +263,7 @@ class SummarizeMdlNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
 
-        def summarize_mdl(state: Dict[str, Any]) -> Dict[str, Any]:
+        def summarize_mdl_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Consolidates and summarizes MDL data context.
 
@@ -299,7 +303,7 @@ class SummarizeMdlNode(BaseNode):
                 'data_schema': data_schema
             }
 
-        return summarize_mdl
+        return summarize_mdl_node
 
 
 
@@ -342,7 +346,7 @@ class GenerateGlobalContextNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
 
-        def generate_global_context(state: Dict[str, Any]) -> Dict[str, Any]:
+        def generate_global_context_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Generates a global context based on provided business logic and data schema.
 
@@ -373,7 +377,7 @@ class GenerateGlobalContextNode(BaseNode):
                 'context': context
             }
         
-        return generate_global_context
+        return generate_global_context_node
 
 
 
@@ -415,7 +419,7 @@ class GenerateNoContextResponseNode(BaseNode):
 
         agent_runnable = self.agent.get_runnable()
         
-        def generate_no_context_response(state: Dict[str, Any]) -> Dict[str, Any]:
+        def generate_no_context_response_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Generates an explanation for the user with examples when no relevant context is found.
 
@@ -455,5 +459,102 @@ class GenerateNoContextResponseNode(BaseNode):
                 'no_relevant_context_msg': no_relevant_context_msg
             }
         
-        return generate_no_context_response
+        return generate_no_context_response_node
+
+
+
+class GenerateFinalOutputNode(BaseNode):
+
+    _agent_validation_Type = 'structured_output'
+    _required_state_vars = [
+        'language',
+        'relevant_question',
+        'relevant_context', 'no_relevant_context_msg',
+        'valid_query_generated', 'sql_query',
+        'valid_query_execution', 'query_results',
+        'nl_output', 'sql_explanation', 'graphics_json',
+        'global_execution_ok',
+    ]
+    _output_property = 'nl_output'
+
+
+    def get_default_agent(self) -> OnFailResponseGenerator:
+        """
+        Provides a new default on fail response generator agent for this node.
+
+        Returns:
+            An instance of the OnFailResponseGenerator agent.
+        """
+        return OnFailResponseGenerator()
+
+
+    def get_node_function(self) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+        """
+        Returns the callable function for this graph node.
+
+        Returns:
+            A function that takes the state dictionary and returns an updated state.
+        """
+
+        agent_runnable = self.agent.get_runnable()
+        
+        def generate_final_output_node(state: Dict[str, Any]) -> Dict[str, Any]:
+            """
+            Route or generate the final natural language output for the user.
+
+            Args:
+                state: The current graph state.
+
+            Returns:
+                An updated state dictionary containing the no-context message.
+            """
+            print("--- 🥁 GENERATE FINAL RESPONSE 🥁 ---")
+            
+            language = state['language']
+            relevant_question = state['relevant_question']
+            relevant_context = state.get('relevant_context', False)
+            no_relevant_context_msg = state.get('no_relevant_context_msg')
+            valid_query_generated = state.get('valid_query_generated', False)
+            sql_query = state.get('sql_query')
+            valid_query_execution = state.get('valid_query_execution', False)
+            query_results = state.get('query_results')
+            nl_output = state.get('nl_output')
+            sql_explanation = state.get('sql_explanation')
+            graphics_json = state.get('graphics_json')
+
+            fail_motive = None
+            if not relevant_question:
+                fail_motive = 'no_relevant_question'
+            elif not relevant_context:
+                nl_output = no_relevant_context_msg
+            elif not valid_query_generated:
+                fail_motive = 'no_sql_query_generated'
+            elif not valid_query_execution:
+                fail_motive = 'query_execution_error'
+
+            if fail_motive:
+                print(f"--- ❌ FAIL DETECTED: '{fail_motive}' ❌ ---")
+                complementary_instructions = _NL_OUTPUT_GENERATOR_DYNAMIC_PROMPT_DICT[fail_motive]
+
+                nl_output = getattr(
+                    agent_runnable.invoke({
+                        "language": language,
+                        "complementary_instructions": complementary_instructions,
+                    }),
+                    self.output_property
+                )
+
+            return {
+                'global_execution_ok': (
+                    fail_motive is None 
+                    and no_relevant_context_msg is None
+                ),
+                'nl_output': nl_output,
+                'sql_query': sql_query,
+                'query_results': query_results,
+                'sql_explanation': sql_explanation,
+                'graphics_json': graphics_json,
+            }
+        
+        return generate_final_output_node
 

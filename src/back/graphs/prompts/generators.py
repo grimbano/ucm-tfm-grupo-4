@@ -3,12 +3,38 @@ from typing import Optional
 
 from .base import BasePrompt
 from .templates import (
+    _on_fail_response_generator_system_prompt,
     _chunk_summary_generator_system_prompt,
     _business_logic_summarizer_system_prompt,
     _mdl_summarizer_system_prompt,
     _global_context_generator_system_prompt,
     _no_relevant_context_generator_system_prompt,
 )
+
+
+class OnFailResponseGeneratorPrompt(BasePrompt):
+    """
+    A specific prompt implementation for generating apologize response on system failure.
+
+    This class provides a default system message to guide a large language model
+    (LLM) in creating an emphatetic response explaining a system failure.
+    """
+
+    def __init__(
+        self,
+        system_prompt: Optional[str] = None,
+    ):
+        """
+        Initializes the OnFailResponseGeneratorPrompt with a default or custom system message.
+
+        Args:
+            system_prompt: The system message that instructs the model
+                    on how to generate the response. Defaults to a 
+                    predefined message if not provided.
+        """
+        super().__init__(
+            system_prompt= system_prompt or _on_fail_response_generator_system_prompt
+        )
 
 
 class ChunkSummaryGeneratorPrompt(BasePrompt):

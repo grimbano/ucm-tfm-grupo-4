@@ -8,21 +8,28 @@ from .inputs import create_retriever_input_class
 from .outputs import (
     AnswerGraderResult,
     BusinessLogicSummarizerResult,
+    BusinessRelevanceGraderResult,
     ChunkSummaryGeneratorResult,
+    DbSchemaExtractionResult,
     GlobalContextGeneratorResult,
     GlobalRetrievalGraderResult,
     HallucinationGraderResult,
     LanguageClassifierResult,
     MdlSummarizerResult,
     NoRelevantContextGeneratorResult,
+    OnFailResponseGeneratorResult,
     RetrievalGraderResult,
+    TablesExtractionResult,
+    QueryCoherenceGraderResult,
 )
 
 
 __all__ = [
     'AnswerGraderResult',
     'BusinessLogicSummarizerResult',
+    'BusinessRelevanceGraderResult',
     'ChunkSummaryGeneratorResult',
+    'DbSchemaExtractionResult',
     'create_retriever_input_class',
     'GlobalContextGeneratorResult',
     'GlobalRetrievalGraderResult',
@@ -30,5 +37,8 @@ __all__ = [
     'LanguageClassifierResult',
     'MdlSummarizerResult',
     'NoRelevantContextGeneratorResult',
+    'OnFailResponseGeneratorResult',
     'RetrievalGraderResult',
+    'TablesExtractionResult',
+    'QueryCoherenceGraderResult',
 ]

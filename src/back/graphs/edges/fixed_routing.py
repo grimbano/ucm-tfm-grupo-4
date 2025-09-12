@@ -1,17 +1,17 @@
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Union
 
 
 
-class RouteContextRelevanceEdge:
+class RouteBooleanStateVariableEdge:
     """
     A conditional edge node that routes the flow based on a boolean state variable.
     """
     def __init__(
         self,
         relevance_state_variable: str,
-        is_relevant_next_step: str,
-        no_relevance_next_step: str
+        is_relevant_next_step: Union[str, bool],
+        no_relevance_next_step: Union[str, bool]
     ):
         """
         Initializes the node with its dependencies and configurable routing parameters.
@@ -25,12 +25,12 @@ class RouteContextRelevanceEdge:
             raise TypeError("relevance_state_variable must be a string.")
         self._relevance_state_variable = relevance_state_variable
 
-        if not isinstance(is_relevant_next_step, str):
-            raise TypeError("is_relevant_next_step must be a string.")
+        if not isinstance(is_relevant_next_step, (str, bool)):
+            raise TypeError("is_relevant_next_step must be a string or bool.")
         self._is_relevant_next_step = is_relevant_next_step
 
-        if not isinstance(no_relevance_next_step, str):
-            raise TypeError("no_relevance_next_step must be a string.")
+        if not isinstance(no_relevance_next_step, (str, bool)):
+            raise TypeError("no_relevance_next_step must be a string or bool.")
         self._no_relevance_next_step = no_relevance_next_step
 
 
@@ -48,28 +48,28 @@ class RouteContextRelevanceEdge:
 
 
     @property
-    def is_relevant_next_step(self) -> str:
+    def is_relevant_next_step(self) -> Union[str, bool]:
         """Getter for the is_relevant_next_step property."""
         return self._is_relevant_next_step
 
     @is_relevant_next_step.setter
-    def is_relevant_next_step(self, value: str):
+    def is_relevant_next_step(self, value: Union[str, bool]):
         """Setter for the is_relevant_next_step property."""
-        if not isinstance(value, str):
-            raise TypeError("is_relevant_next_step must be a string.")
+        if not isinstance(value, (str, bool)):
+            raise TypeError("is_relevant_next_step must be a string or bool.")
         self._is_relevant_next_step = value
 
 
     @property
-    def no_relevance_next_step(self) -> str:
+    def no_relevance_next_step(self) -> Union[str, bool]:
         """Getter for the no_relevance_next_step property."""
         return self._no_relevance_next_step
 
     @no_relevance_next_step.setter
-    def no_relevance_next_step(self, value: str):
+    def no_relevance_next_step(self, value: Union[str, bool]):
         """Setter for the no_relevance_next_step property."""
-        if not isinstance(value, str):
-            raise TypeError("no_relevance_next_step must be a string.")
+        if not isinstance(value, (str, bool)):
+            raise TypeError("no_relevance_next_step must be a string or bool.")
         self._no_relevance_next_step = value
 
 
@@ -79,8 +79,11 @@ class RouteContextRelevanceEdge:
         """
         def route_context_relevance(state: Dict[str, Any]) -> str:
             """
-            Routes the flow between generating a global context or a no-relevance response.
+            Routes the flow based on a boolean state variable.
             """
+            if not isinstance(state[self.relevance_state_variable], bool):
+                TypeError(f"'{self.relevance_state_variable}' in state must be a bool.")
+
             return (
                 self.is_relevant_next_step
                 if state[self.relevance_state_variable] else

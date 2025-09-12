@@ -7,17 +7,58 @@ from langchain_core.language_models import BaseChatModel
 from .base import BaseAgent
 from ..models import llm_graders
 from ..prompts import (
-    GlobalRetrievalGraderPrompt,
+    BusinessRelevanceGraderPrompt,
     RetrievalGraderPrompt,
     HallucinationGraderPrompt,
     AnswerGraderPrompt,
+    GlobalRetrievalGraderPrompt,
 )
 from ..pydantic_models import (
+    BusinessRelevanceGraderResult,
     RetrievalGraderResult,
     GlobalRetrievalGraderResult,
     HallucinationGraderResult,
     AnswerGraderResult,
 )
+
+
+
+class BusinessRelevanceGrader(BaseAgent):
+    """
+    An agent for grading the relevance of an user's query against a business datawarehouse information context.
+
+    This class specializes `BaseAgent` with a default LLM, a dedicated prompt constructor,
+    and a structured output schema to determine if a retrieved document is relevant
+    to the given question.
+    """
+
+    _default_llm = llm_graders
+    _default_structured_output = BusinessRelevanceGraderResult
+
+    def __init__(
+        self,
+        llm: Optional[BaseChatModel] = None,
+        system_prompt: Optional[str] = None,
+        human_message: Optional[str] = None,
+        structured_output: Optional[Union[BaseModel, Dict, Type]] = None,
+    ):
+        """
+        Initializes the business relevance grader agent.
+
+        Args:
+            llm: The LangChain chat model. Defaults to a predefined grader model.
+            system_prompt: The system message. Defaults to a predefined message.
+            human_message: The human message. Defaults to a predefined message.
+            structured_output: The output schema. Defaults to a predefined result schema.
+        """
+        super().__init__(
+            llm= llm or self._default_llm,
+            prompt_constructor= BusinessRelevanceGraderPrompt(
+                system_prompt= system_prompt,
+                human_message= human_message,
+            ),
+            structured_output= structured_output or self._default_structured_output
+        )
 
 
 
@@ -44,7 +85,7 @@ class RetrievalGrader(BaseAgent):
         Initializes the retrieval grader agent.
 
         Args:
-            llm: The LangChain chat model. Defaults to a predefined classifier model.
+            llm: The LangChain chat model. Defaults to a predefined grader model.
             system_prompt: The system message. Defaults to a predefined message.
             human_message: The human message. Defaults to a predefined message.
             structured_output: The output schema. Defaults to a predefined result schema.
@@ -83,7 +124,7 @@ class HallucinationGrader(BaseAgent):
         Initializes the hallucination grader agent.
 
         Args:
-            llm: The LangChain chat model. Defaults to a predefined classifier model.
+            llm: The LangChain chat model. Defaults to a predefined grader model.
             system_prompt: The system message. Defaults to a predefined message.
             human_message: The human message. Defaults to a predefined message.
             structured_output: The output schema. Defaults to a predefined result schema.
@@ -122,7 +163,7 @@ class AnswerGrader(BaseAgent):
         Initializes the answer grader agent.
 
         Args:
-            llm: The LangChain chat model. Defaults to a predefined classifier model.
+            llm: The LangChain chat model. Defaults to a predefined grader model.
             system_prompt: The system message. Defaults to a predefined message.
             human_message: The human message. Defaults to a predefined message.
             structured_output: The output schema. Defaults to a predefined result schema.
@@ -160,7 +201,7 @@ class GlobalRetrievalGrader(BaseAgent):
         Initializes the retrieval grader agent.
 
         Args:
-            llm: The LangChain chat model. Defaults to a predefined classifier model.
+            llm: The LangChain chat model. Defaults to a predefined grader model.
             system_prompt: The system message. Defaults to a predefined message.
             structured_output: The output schema. Defaults to a predefined result schema.
         """

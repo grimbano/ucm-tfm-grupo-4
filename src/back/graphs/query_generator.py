@@ -1,103 +1,49 @@
 #################### LIBRERIAS ####################
 
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI
-
 import os
 import re
 from dotenv import load_dotenv 
-from typing import Annotated, Optional, List, Dict, Any, NotRequired
-from typing_extensions import TypedDict
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field
 
 import sqlglot
 from sqlglot.errors import ParseError
 
+from langchain.chat_models import init_chat_model
+from langchain_core.tools import tool
+from langchain_core.messages import SystemMessage, HumanMessage
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.state import CompiledStateGraph
+
+
 #################### IMPORTS de GASTON -> query_examples_retireval ####################
 
-import sys
-from pathlib import Path
-
-# Añadimos el directorio raíz del proyecto al path
-project_root = Path().resolve().parent
-if str(project_root) not in sys.path:
-    sys.path.append(str(project_root))
-
-from src.back.embeddings import GenAIExtendedEmbeddingFunction
-from src.back.chroma_collections import (
-    ContextEnricherChromaCollection,
-    MdlHierarchicalChromaCollections,
+from ..embeddings import GenAIExtendedEmbeddingFunction
+from ..chroma_collections import (
     ExamplesChromaCollection
 )
+from .states import QueryGeneratorState, QueryGeneratorOutputState
 
-from pydantic import BaseModel, Field
 
-def get_query_generator_graph():
+def get_query_generator_graph(model: str = 'gpt-4.1') -> CompiledStateGraph[Optional[Any]]:
 
     #################### SETTINGS ####################
     load_dotenv()       #Cargo las variables del archivo .env
 
-    API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
-    ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-    API_VERSION = os.getenv("OPENAI_API_VERSION")
-    MODELO = "gpt-4o"
-
-    GENAI_EMBEDDING_MODEL = 'gemini-embedding-001'
-    MAX_SUBQUERIES_SPLIT = 5
-
     #################### STATEs ####################
     ########## Local State ##########
 
-    # Reducer "sum" para contadores: si un nodo devuelve attempt=1,
-    # se sumará al valor actual (en vez de sobrescribir)
-    def sum_int(old: int, new: int) -> int:
-        return (old or 0) + (new or 0)
-
-    # Reducer "append list" simple para notas (listas de str)
-    def append_list(old: Optional[List[str]], new: Optional[List[str]]) -> List[str]:
-        return (old or []) + (new or [])
-
-    class QueryGeneratorState(TypedDict, total=False):
-
-        context: str #Contetxo simulado del agente simulador de contexto
-        user_query: str # query del usuario en lenguaje natural
-
-        query_examples: str #Los ejemplos, si es que hay, que obtengo de Chroma
-        
-        # Proceso NL2SQL
-        sql_candidate: str             # último SQL generado
-        valid_query_generated: bool
-        error_msg: str
-
-        # Control de bucle
-        attempt: Annotated[int, sum_int] # contador de intentos (se suma)
-        max_attempts: int                # límite de intentos
-
-        # Notas: una especie de log donde se anotan los eventos claves del flujo.
-        notes: Annotated[List[str], append_list]
-        
-        dialect: str #'postgres'
-        language: str
-
-        # Salida
-        sql_query: str        # SQL validada
-
-    class QueryGeneratorOutputState(TypedDict, total=False):
-        sql_query: str
-        valid_query_generated: bool   #Si es False, no se devuelve sql_query
 
     #################### TOOL QUERY EXAMPLES RETRIEVAL ####################
 
     # a. Model de Embeddings y coleccion de Chroma que contiene los ejemplos: **query_examples** 
-    genai_embeddings = GenAIExtendedEmbeddingFunction(model= GENAI_EMBEDDING_MODEL)
+    genai_embeddings = GenAIExtendedEmbeddingFunction(model= 'gemini-embedding-001')
 
     query_examples_collection = ExamplesChromaCollection(
-    collection_name= 'query_examples',
-    embedding_function= genai_embeddings,
-    host= os.getenv('CHROMA_SERVER_HOST', 'localhost'),
-    port= os.getenv('CHROMA_LOCAL_PORT', '8000')
+        collection_name= 'query_examples',
+        embedding_function= genai_embeddings,
+        host= os.getenv('CHROMA_SERVER_HOST', 'localhost'),
+        port= os.getenv('CHROMA_LOCAL_PORT', '8000')
     )
     #b. Definicion del esquema de entrada:
     class RetrieverInput(BaseModel):
@@ -106,9 +52,7 @@ def get_query_generator_graph():
         """
         query: List[str] = Field(
             description= (
-                "A list of one or more search queries to retrieve relevant information. "
-                f"Break down the user's question into up to {MAX_SUBQUERIES_SPLIT} simple, focused sub-queries to maximize retrieval accuracy. "
-                "Each sub-query should represent a key concept from the original question."
+                "A list of one or more search queries to retrieve relevant information."
             )
         )
         language: Optional[str]
@@ -117,10 +61,7 @@ def get_query_generator_graph():
     @tool("query_examples_retriever", args_schema=RetrieverInput)
     def get_query_examples(query: List[str], language: Optional[str] = None) -> str:
         """
-        ¡¡¡¡MODIFICAR!!!
-        Retrieve detailed business logic, including KPI calculations, domain-specific rules, and definitions of business concepts.
-        This is the primary source for understanding the semantic meaning and 'why' behind the data. 
-        Provide multiple queries to cover all relevant business aspects.
+        Retrieve relevant examples for the input query/queries.
         """
 
         def _iter_docs(search_results):
@@ -139,10 +80,10 @@ def get_query_generator_graph():
             filter = {'language': language}
 
         search_results = query_examples_collection.search(
-            queries = query,
-            search_type = 'similarity_score_threshold',
-            k = 2,
-            filter = filter     # Agrego filtro por idioma a la busqueda de Chroma
+            queries= query,
+            search_type= 'similarity',
+            k= 2,
+            filter= filter,
         )
 
         if not search_results:
@@ -265,10 +206,10 @@ def get_query_generator_graph():
     ########### ESQUELETO DEL GRAFO ############
 
     #MODELO
-    llm = AzureChatOpenAI(
-        azure_deployment=MODELO,
-        openai_api_version=API_VERSION,
-        temperature=0
+    llm = init_chat_model(
+        model_provider= 'azure_openai',
+        model= model,
+        temperature= 0,
     )
 
     #PROMPT LLM
