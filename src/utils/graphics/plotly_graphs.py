@@ -21,6 +21,10 @@ def create_dashboard_from_json(
     """
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
+    if not json_str:
+        logging.info("No hay datos de gráficos para procesar. Saliendo.")
+        return None
+
     _json_str = json_str
     if json_str.strip().lower().startswith('```json'):
         _json_str= json_str.strip()[len('```json'):]

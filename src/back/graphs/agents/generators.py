@@ -6,6 +6,7 @@ from langchain_core.language_models import BaseChatModel
 from .base import BaseAgent
 from ..models import llm_generators
 from ..prompts import (
+    OnFailResponseGeneratorPrompt,
     ChunkSummaryGeneratorPrompt,
     BusinessLogicSummarizerPrompt,
     MdlSummarizerPrompt,
@@ -13,12 +14,49 @@ from ..prompts import (
     NoRelevantContextGeneratorPrompt,
 )
 from ..pydantic_models import (
+    OnFailResponseGeneratorResult,
     ChunkSummaryGeneratorResult,
     BusinessLogicSummarizerResult,
     MdlSummarizerResult,
     GlobalContextGeneratorResult,
     NoRelevantContextGeneratorResult,
 )
+
+
+
+class OnFailResponseGenerator(BaseAgent):
+    """
+    An agent for generating apologize response on system failure.
+
+    This class specializes `BaseAgent` with a default LLM, a prompt constructor
+    for response generation.
+    """
+
+    _default_llm = llm_generators
+    _default_structured_output = OnFailResponseGeneratorResult
+
+    def __init__(
+        self,
+        llm: Optional[BaseChatModel] = None,
+        system_prompt: Optional[str] = None,
+        structured_output: Optional[Union[BaseModel, Dict, Type]] = None,
+    ):
+        """
+        Initializes the on fail response generator agent.
+
+        Args:
+            llm: The LangChain chat model. Defaults to a predefined model.
+            system_prompt: The system message. Defaults to a predefined message.
+            structured_output: The schema for the output. Defaults to a predefined
+                    result schema for natural language output.
+        """
+        super().__init__(
+            llm= llm or self._default_llm,
+            prompt_constructor= OnFailResponseGeneratorPrompt(
+                system_prompt= system_prompt,
+            ),
+            structured_output= structured_output or self._default_structured_output
+        )
 
 
 

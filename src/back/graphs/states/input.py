@@ -96,18 +96,20 @@ class ConclusionsGeneratorState(TypedDict):
 class MainGraphState(TypedDict):
     user_query: str
     language: str
-    relevant_context: bool
+    relevant_question: bool                             # IMPORTANTE
+    relevant_context: bool                              # IMPORTANTE
     context: str
     db_name: str
     schema_name: str
-    no_relevant_context_msg: str
+    no_relevant_context_msg: str                        # IMPORTANTE
     sql_query: str
-    valid_query_generated: bool
+    valid_query_generated: bool                         # IMPORTANTE
     table_names: List[str]
     tables_info: List[str]
     query_results: List[Dict[str, Any]]
-    valid_query_execution: bool
     query_validation_error_msg: Optional[str]
-    nl_output: str
+    valid_query_execution: bool                         # IMPORTANTE
+    nl_output: str                                      # IMPORTANTE
     sql_explanation: str
     graphics_json: Optional[str]
+    global_execution_ok: bool

@@ -31,7 +31,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
 
     llm_query_corrector = init_chat_model(
         model_provider= 'azure_openai',
-        model= 'gpt-4o',
+        model= 'gpt-4.1',
         temperature= 0,
         max_tokens=2048
     )
@@ -70,13 +70,64 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
 
     ## QUERY CORRECTOR
     DYNAMIC_PROMPT_CONTENT = {
-        'error_coherence': "La siguiente query SQL es incoherente con el mensaje del usuario, corrígela para que lo sea. Es necesario que pongas el nombre del esquema cuando referencias una tabla. Mensaje: '{user_query}' Query: '{original_sql_query}' Resumen tablas involucradas '{context}'",
-        'error_db': "La siguiente query SQL ha fallado. La query era: '{original_sql_query}'. La petición original: '{user_query}'. Resumen tablas involucradas '{context}'. Es necesario que pongas el nombre del esquema cuando referencias una tabla. Corrige la query."
-    }
+    'error_coherence': """
+    Corrige la siguiente query SQL para que sea coherente con el mensaje del usuario. 
+    Asegúrate de incluir el nombre del esquema para cada tabla real.
+    No añadas un esquema a los nombres de las CTEs (WITH).
+    
+    ---
+
+    Mensaje del usuario:
+    <user_query>
+    {user_query}
+    </user_query>
+
+    ---
+
+    Query original:
+    <original_sql_query>
+    {original_sql_query}
+    </original_sql_query>
+
+    ---
+
+    Resumen de tablas:
+    <context>
+    {context}
+    </context>
+    """,
+    
+    'error_db': """
+    Corrige esta query SQL que ha fallado.
+    Recuerda que solo las tablas reales tienen un esquema, por lo que debes incluírselo.
+    No añadas un esquema a los nombres de las CTEs (WITH).
+    
+    ---
+
+    Mensaje del usuario:
+    <user_query>
+    {user_query}
+    </user_query>
+
+    ---
+
+    Query original:
+    <original_sql_query>
+    {original_sql_query}
+    </original_sql_query>
+
+    ---
+
+    Resumen de tablas:
+    <tables_info>
+    {tables_info}
+    </tables_info>
+    """
+}
 
     query_corrector_prompt = ChatPromptTemplate.from_messages([
-        {"role": "system", "content": "Eres un experto en bases de datos. Devuelve SÓLO la query corregida, sin usar MARKDOWN, sin explicaciones ni texto adicional."},
-        {"role": "user", "content": '{prompt_content}'}
+        {"role": "system", "content": "Eres un experto en bases de datos. Devuelve SÓLO la query corregida, sin usar MARKDOWN, sin explicaciones ni texto adicional.\n\n{prompt_content}"},
+        # {"role": "user", "content": '{prompt_content}'}
     ])
 
     query_corrector = query_corrector_prompt | llm_query_corrector
@@ -183,6 +234,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
     def query_correction_node(state: QueryValidatorState):
         user_query = state['user_query']
         context = state['context']
+        tables_info = state.get('tables_info', context)
         original_sql_query = state['sql_query']
         error_type = state.get("query_validation_error_msg")
 
@@ -196,8 +248,9 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
         corrected_query = query_corrector.invoke({
             'prompt_content': prompt_content.format(
                 user_query= user_query,
+                tables_info= tables_info,
                 context= context,
-                original_sql_query= original_sql_query
+                original_sql_query= original_sql_query,
             )
         }).content
             

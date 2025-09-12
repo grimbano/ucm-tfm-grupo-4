@@ -14,6 +14,15 @@ class LanguageClassifierResult(BaseModel):
 
 ########## GRADERS ##########
 
+class BusinessRelevanceGraderResult(BaseModel):
+    """
+    Boolean score to determine if a query is relevant to 
+    business and can be answered with a data warehouse.
+    """
+    relevant_question: bool = Field(
+        description="The query is business-relevant and answerable by data, `true` or `false`."
+    )
+
 class RetrievalGraderResult(BaseModel):
     """Boolean score for relevance check on retrieved documents."""
     relevant: bool = Field(
@@ -77,6 +86,12 @@ class TablesExtractionResult(BaseModel):
 
 
 ########## GENERATORS ##########
+
+class OnFailResponseGeneratorResult(BaseModel):
+    """The final message to be shown to the user when a process has failed."""
+    nl_output: str = Field(
+        description="A polite and clear message explaining why the request could not be fulfilled."
+    )
 
 class ChunkSummaryGeneratorResult(BaseModel):
     """Relevant content generated from bringed context based in user query."""

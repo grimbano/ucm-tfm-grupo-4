@@ -48,5 +48,7 @@ class ConclusionsGeneratorOutputState(TypedDict):
 class MainGraphOutputState(TypedDict):
     global_execution_ok: bool
     nl_output: str
-    sql_explanation: str
+    sql_query: Optional[str]
+    query_results: Optional[List[Dict[str, Any]]]
+    sql_explanation: Optional[str]
     graphics_json: Optional[str]

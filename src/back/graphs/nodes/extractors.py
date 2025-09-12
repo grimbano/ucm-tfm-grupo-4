@@ -69,7 +69,7 @@ class ExtractDbSchemaNode(BaseMultiOutputAgentNode):
         """
         agent_runnable = self.agent.get_runnable()
 
-        def extract_db_schema(state: Dict[str, Any]) -> Dict[str, Any]:
+        def extract_db_schema_node(state: Dict[str, Any]) -> Dict[str, Any]:
             """
             Extract the DB and schema names from the data schema summary.
 
@@ -90,4 +90,4 @@ class ExtractDbSchemaNode(BaseMultiOutputAgentNode):
                 for prop in self.output_properties
             }
 
-        return extract_db_schema
+        return extract_db_schema_node
