@@ -77,13 +77,15 @@ class QueryValidatorState(TypedDict):
     table_names: List[str]
     tables_info: List[str]
     query_results: List[Dict[str, Any]]
-    query_validation_error_msg: Optional[str]
+    query_validation_error_type: str
+    query_validation_error_msg: str
     retries: int
     valid_query_execution: bool
 
 
 class ConclusionsGeneratorState(TypedDict):
     user_query: str
+    n_phrases: int
     sql_query: str
     language: str
     query_results: str
@@ -95,6 +97,7 @@ class ConclusionsGeneratorState(TypedDict):
 
 class MainGraphState(TypedDict):
     user_query: str
+    n_phrases: int
     language: str
     relevant_question: bool                             # IMPORTANTE
     relevant_context: bool                              # IMPORTANTE
@@ -107,7 +110,6 @@ class MainGraphState(TypedDict):
     table_names: List[str]
     tables_info: List[str]
     query_results: List[Dict[str, Any]]
-    query_validation_error_msg: Optional[str]
     valid_query_execution: bool                         # IMPORTANTE
     nl_output: str                                      # IMPORTANTE
     sql_explanation: str

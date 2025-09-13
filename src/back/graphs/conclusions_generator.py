@@ -14,7 +14,7 @@ from .states import ConclusionsGeneratorState, ConclusionsGeneratorOutputState
 
 
 def get_conclusions_generator_graph(
-        conclusions_n_phrases: int = 10, 
+        n_phrases: int = 10, 
         max_retries: int = 5
 ) -> CompiledStateGraph[Optional[Any]]:
 
@@ -151,8 +151,9 @@ def get_conclusions_generator_graph(
         Nodo que analiza los resultados de la consulta SQL y genera 
         conclusiones relevantes para la consulta del usuario.
         """
-        print("\n--- INICIANDO GENERACIÓN DE CONCLUSIONES 📝 ---")
+        print("--- INICIANDO GENERACIÓN DE CONCLUSIONES 📝 ---")
         user_query = state['user_query']
+        _n_phrases = state.get('n_phrases', n_phrases)
         language = state['language']
         query_results = state['query_results']
 
@@ -160,7 +161,7 @@ def get_conclusions_generator_graph(
             'user_query': user_query,
             'language': language,
             'query_results': convert_to_markdown_table(query_results),
-            'n_phrases': conclusions_n_phrases,
+            'n_phrases': _n_phrases,
         }).content
         
         return {"nl_output": nl_output}
@@ -171,7 +172,7 @@ def get_conclusions_generator_graph(
         Nodo que analiza la consulta SQL frente a la consulta del 
         usuario y genera una breve explicación de lo desarrollado.
         """
-        print("\n--- INICIANDO EXPLICACIÓN DE CONSULTA SQL 🗂️ ---")
+        print("--- INICIANDO EXPLICACIÓN DE CONSULTA SQL 🗂️ ---")
         user_query = state['user_query']
         language = state['language']
         sql_query = state['sql_query']
@@ -190,7 +191,7 @@ def get_conclusions_generator_graph(
         Nodo que genera gráficos basados en los resultados de la consulta SQL, 
         que sean relevantes para la consulta del usuario.
         """
-        print("\n--- INICIANDO GENERACIÓN DE GRÁFICOS 📊 ---")
+        print("--- INICIANDO GENERACIÓN DE GRÁFICOS 📊 ---")
         user_query = state['user_query']
         language = state['language']
         query_results = state['query_results']
@@ -203,7 +204,7 @@ def get_conclusions_generator_graph(
         }).content
 
         if create_dashboard_from_json(graphics_json) is None:
-            print(f"\n❌ Error al generar gráficos")
+            print("--- ❌ Error al generar gráficos ---")
             return {
                 "graphics_json": None,
                 "graphs_retries": graphs_retries
