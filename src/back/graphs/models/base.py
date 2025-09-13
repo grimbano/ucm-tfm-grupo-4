@@ -1,6 +1,8 @@
 
+from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 
+load_dotenv()
 
 llm_graders = init_chat_model(
     model_provider= 'azure_openai',

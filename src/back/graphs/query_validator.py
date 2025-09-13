@@ -70,60 +70,72 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
 
     ## QUERY CORRECTOR
     DYNAMIC_PROMPT_CONTENT = {
-    'error_coherence': """
-    Corrige la siguiente query SQL para que sea coherente con el mensaje del usuario. 
-    Asegúrate de incluir el nombre del esquema para cada tabla real.
-    No añadas un esquema a los nombres de las CTEs (WITH).
-    
-    ---
+        'error_coherence': """
+        Corrige la siguiente query SQL para que sea coherente con el mensaje del usuario. 
+        Asegúrate de incluir el nombre del esquema para cada tabla real.
+        No añadas un esquema a los nombres de las CTEs (WITH).
+        
+        ---
 
-    Mensaje del usuario:
-    <user_query>
-    {user_query}
-    </user_query>
+        Mensaje del usuario:
+        <user_query>
+        {user_query}
+        </user_query>
 
-    ---
+        ---
 
-    Query original:
-    <original_sql_query>
-    {original_sql_query}
-    </original_sql_query>
+        Query original:
+        <original_sql_query>
+        {original_sql_query}
+        </original_sql_query>
 
-    ---
+        ---
 
-    Resumen de tablas:
-    <context>
-    {context}
-    </context>
-    """,
-    
-    'error_db': """
-    Corrige esta query SQL que ha fallado.
-    Recuerda que solo las tablas reales tienen un esquema, por lo que debes incluírselo.
-    No añadas un esquema a los nombres de las CTEs (WITH).
-    
-    ---
+        Resumen de tablas:
+        <context>
+        {context}
+        </context>
+        """,
+        
+        'error_db': """
+        Tu tarea es corregir una consulta SQL que ha fallado. Analiza cuidadosamente el **mensaje de error** proporcionado para identificar la causa raíz del fallo.
+        
+        **Proceso de corrección:**
 
-    Mensaje del usuario:
-    <user_query>
-    {user_query}
-    </user_query>
+        1.  **Reflexiona sobre el error:** Lee y comprende el mensaje de error. Considera qué parte de la query está causando el problema.
+        2.  **Consulta la información:** Utiliza el `user_query`, la `original_sql_query` y el `tables_info` para contextualizar el problema.
+        3.  **Identifica la tabla:** Asegúrate de que todas las tablas reales en la query incluyan su esquema (`<schema>.<tabla>`). \
+            Recuerda que las CTEs (WITH) no pertenecen a ningún esquema y no deben ser modificadas.
 
-    ---
+        ---
 
-    Query original:
-    <original_sql_query>
-    {original_sql_query}
-    </original_sql_query>
+        Mensaje del usuario:
+        <user_query>
+        {user_query}
+        </user_query>
 
-    ---
+        ---
 
-    Resumen de tablas:
-    <tables_info>
-    {tables_info}
-    </tables_info>
-    """
-}
+        Query original:
+        <original_sql_query>
+        {original_sql_query}
+        </original_sql_query>
+
+        ---
+
+        Error al ejecutar query:
+        <error_msg>
+        {error_msg}
+        </error_msg>
+
+        ---
+
+        Resumen de tablas:
+        <tables_info>
+        {tables_info}
+        </tables_info>
+        """
+    }
 
     query_corrector_prompt = ChatPromptTemplate.from_messages([
         {"role": "system", "content": "Eres un experto en bases de datos. Devuelve SÓLO la query corregida, sin usar MARKDOWN, sin explicaciones ni texto adicional.\n\n{prompt_content}"},
@@ -185,7 +197,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
             print(f"\n❌🔚 Límite de {max_retries} reintentos alcanzado. Finalizando.")
             return {
                 'valid_query_execution': False,
-                "query_validation_error_msg": "limit_reached"
+                "query_validation_error_type": "limit_reached"
             }
 
         print("\n--- INICIANDO FASE DE JUEZ DE COHERENCIA 👩‍⚖️ ---\n")
@@ -196,12 +208,12 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
             'sql_query': sql_query,
         }).coherent
 
-        print(f"Veredicto del juez: {'COHERENTE ✅' if coherent else 'INCOHERENTE ❌'}")
+        print(f"--- Veredicto del juez: {'COHERENTE ✅' if coherent else 'INCOHERENTE ❌'} ---")
         
         if not coherent:
             print("\n❌ La query es incoherente. No se ejecutará en la BBDD.")
             return {
-                "query_validation_error_msg": "error_coherence", 
+                "query_validation_error_type": "error_coherence", 
                 "retries": retries
             }
         
@@ -216,7 +228,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
                 query_results = [row for row in result.mappings()]
 
             
-            print(f"\n✅ Query ejecutada correctamente.")
+            print(f"--- ✅ Query ejecutada correctamente. ---")
             return {
                 "tables_info": tables_info,
                 "query_results": query_results,
@@ -224,9 +236,10 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
             }
 
         except Exception as e:
-            print(f"\n❌ Error de PostgreSQL detectado: {e}")
+            print(f"\n❌ Error de PostgreSQL detectado: {e}\n")
             return {
-                "query_validation_error_msg": "error_db",
+                "query_validation_error_type": "error_db",
+                "query_validation_error_msg": e,
                 "retries": retries
             }
 
@@ -236,18 +249,20 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
         context = state['context']
         tables_info = state.get('tables_info', context)
         original_sql_query = state['sql_query']
-        error_type = state.get("query_validation_error_msg")
+        error_type = state['query_validation_error_type']
+        error_msg = state.get('query_validation_error_msg')
 
         prompt_content = DYNAMIC_PROMPT_CONTENT.get(error_type, 'N/A')
 
         if prompt_content == 'N/A':
-            print("❌ Error no reconocido. Saliendo del corrector.")
+            print("--- ❌ Error no reconocido. Saliendo del corrector. ---")
             return {"sql_query": original_sql_query}
         
         print("\n--- INICIANDO FASE DE CORRECIÓN 📝 ---\n")
         corrected_query = query_corrector.invoke({
             'prompt_content': prompt_content.format(
                 user_query= user_query,
+                error_msg= error_msg,
                 tables_info= tables_info,
                 context= context,
                 original_sql_query= original_sql_query,

@@ -1,4 +1,5 @@
 
+from dotenv import load_dotenv
 from typing import Any, Optional
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph, START, END
