@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "chromadb==1.0.15",
-    "chromadb-ops>=0.1.5",
     "google-genai>=1.30.0",
     "gradio>=3.36.1",
     "langchain>=0.3.27",
@@ -24,5 +23,6 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "pyyaml>=6.0.2",
     "regex>=2025.7.34",
+    "setuptools<81",
     "sqlglot>=27.11.0",
 ]
