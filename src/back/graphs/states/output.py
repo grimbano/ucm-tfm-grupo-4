@@ -17,7 +17,6 @@ class MdlOutputState(TypedDict):
 
 
 class ContextGeneratorOutputState(TypedDict):
-    language: str
     db_name: str
     schema_name: str
     relevant_context: bool
@@ -36,7 +35,6 @@ class QueryValidatorOutputState(TypedDict):
     tables_info: List[str]
     query_results: List[Dict[str, Any]]
     valid_query_execution: bool
-    query_validation_error_msg: Optional[str]
 
 
 class ConclusionsGeneratorOutputState(TypedDict):
@@ -46,6 +44,8 @@ class ConclusionsGeneratorOutputState(TypedDict):
 
 
 class MainGraphOutputState(TypedDict):
+    user_query: bool
+    n_phrases: int
     global_execution_ok: bool
     nl_output: str
     sql_query: Optional[str]
