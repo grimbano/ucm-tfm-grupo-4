@@ -4,6 +4,9 @@ from typing import Any, Callable, Dict
 from .base import BaseNode
 from ..agents import LanguageClassifier
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 
 class DefineUserQueryLanguageNode(BaseNode):
@@ -47,7 +50,7 @@ class DefineUserQueryLanguageNode(BaseNode):
                 An updated state dictionary containing the detected language and
                 an incremented iteration count.
             """
-            print("--- DEFINE USER QUERY LANGUAGE 🔣 ---")
+            logging.info("--- DEFINE USER QUERY LANGUAGE 🔣 ---")
             
             user_query = state['user_query']
             

@@ -19,6 +19,9 @@ from .edges import (
     GradeRetrievedChunkEdge
 )
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 class ChunkProcessingGraph(BaseGraph):
     """
@@ -156,7 +159,7 @@ class ChunkProcessingGraph(BaseGraph):
         Returns:
             The compiled LangGraph graph ready for execution.
         """
-        print("--- BUILDING CHUNK PROCESSING GRAPH 🏗️ ---")
+        logging.info("--- BUILDING CHUNK PROCESSING GRAPH 🏗️ ---")
 
         workflow = StateGraph(
             state_schema= self.state_schema,
@@ -195,7 +198,7 @@ class ChunkProcessingGraph(BaseGraph):
 
 
         compiled_graph = workflow.compile()
-        print("--- CHUNK PROCESSING GRAPH COMPILED SUCCESSFULLY ⚙️✅ ---")
+        logging.info("--- CHUNK PROCESSING GRAPH COMPILED SUCCESSFULLY ⚙️✅ ---")
 
         return compiled_graph
 

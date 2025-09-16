@@ -4,6 +4,9 @@ from typing import Any, Callable, Dict, List, Optional, Type
 from .base import BaseMultiOutputAgentNode
 from ..agents import BaseAgent, DbSchemaExtractor
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 
 class ExtractDbSchemaNode(BaseMultiOutputAgentNode):
@@ -79,7 +82,7 @@ class ExtractDbSchemaNode(BaseMultiOutputAgentNode):
             Returns:
                 An updated state dictionary containing the db_name and schema_name.
             """
-            print("--- EXTRACT DB SCHEMA 🧮 ---")
+            logging.info("--- EXTRACT DB SCHEMA 🧮 ---")
             
             data_schema = state['data_schema']
             

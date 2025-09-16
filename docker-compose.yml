@@ -33,10 +33,28 @@ services:
       - .env
 
     ports:
-      - "${CHROMA_LOCAL_PORT}:${CHROMA_SERVER_HTTP_PORT}"
+      - "${CHROMA_SERVER_HTTP_PORT}:${CHROMA_SERVER_HTTP_PORT}"
     
     volumes:
       - ./data/embeddings/chroma:/data
+
+
+  tfm-gradio-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.gradio
+    container_name: tfm-gradio-app
+    restart: unless-stopped
+
+    env_file:
+      - .env.docker.gradio
+      
+    ports:
+      - "${GRADIO_SERVER_PORT}:${GRADIO_SERVER_PORT}"
+
+    depends_on:
+      - tfm-postgres-db
+      - tfm-chroma-db
 
 
 volumes:

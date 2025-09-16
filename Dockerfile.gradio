@@ -1,0 +1,29 @@
+# Usa la imagen oficial de uv (más ligera que un Python + pip clásico)
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+
+# Establece el directorio de trabajo
+WORKDIR /app
+
+# Copiamos el gestor de dependencias
+COPY pyproject.toml uv.lock ./
+
+# Instalamos dependencias del sistema necesarias para psycopg2
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalamos las dependencias declaradas en pyproject.toml/uv.lock
+RUN uv sync --frozen
+
+# Copiamos el código del proyecto
+COPY . .
+
+# Renombramos el archivo de entorno
+RUN mv .env.docker.gradio .env
+
+# Exponemos el puerto donde correrá Gradio
+EXPOSE ${GRADIO_SERVER_PORT}
+
+# Comando por defecto para arrancar la app con uv
+CMD ["uv", "run", "python", "gradio_interface.py"]

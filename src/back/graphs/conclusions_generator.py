@@ -12,6 +12,9 @@ from ...utils.doc_generators import convert_to_markdown_table
 from ...utils.graphics import create_dashboard_from_json
 from .states import ConclusionsGeneratorState, ConclusionsGeneratorOutputState
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 def get_conclusions_generator_graph(
         n_phrases: int = 10, 
@@ -151,7 +154,7 @@ def get_conclusions_generator_graph(
         Nodo que analiza los resultados de la consulta SQL y genera 
         conclusiones relevantes para la consulta del usuario.
         """
-        print("--- INICIANDO GENERACIÓN DE CONCLUSIONES 📝 ---")
+        logging.info("--- INICIANDO GENERACIÓN DE CONCLUSIONES 📝 ---")
         user_query = state['user_query']
         _n_phrases = state.get('n_phrases', n_phrases)
         language = state['language']
@@ -172,7 +175,7 @@ def get_conclusions_generator_graph(
         Nodo que analiza la consulta SQL frente a la consulta del 
         usuario y genera una breve explicación de lo desarrollado.
         """
-        print("--- INICIANDO EXPLICACIÓN DE CONSULTA SQL 🗂️ ---")
+        logging.info("--- INICIANDO EXPLICACIÓN DE CONSULTA SQL 🗂️ ---")
         user_query = state['user_query']
         language = state['language']
         sql_query = state['sql_query']
@@ -191,7 +194,7 @@ def get_conclusions_generator_graph(
         Nodo que genera gráficos basados en los resultados de la consulta SQL, 
         que sean relevantes para la consulta del usuario.
         """
-        print("--- INICIANDO GENERACIÓN DE GRÁFICOS 📊 ---")
+        logging.info("--- INICIANDO GENERACIÓN DE GRÁFICOS 📊 ---")
         user_query = state['user_query']
         language = state['language']
         query_results = state['query_results']
@@ -204,7 +207,7 @@ def get_conclusions_generator_graph(
         }).content
 
         if create_dashboard_from_json(graphics_json) is None:
-            print("--- ❌ Error al generar gráficos ---")
+            logging.error("--- ❌ Error al generar gráficos ---")
             return {
                 "graphics_json": None,
                 "graphs_retries": graphs_retries
