@@ -16,6 +16,9 @@ from ..agents import (
     OnFailResponseGenerator
 )
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 
 class SummarizeChunkNode(BaseNode):
@@ -107,7 +110,7 @@ class SummarizeChunkNode(BaseNode):
                 An updated state dictionary containing the generated content and
                 an incremented iteration count.
             """
-            print("--- SUMMARIZE CHUNK 📝📚 ---")
+            logging.info("--- SUMMARIZE CHUNK 📝📚 ---")
             user_query: str = state['user_query']
             language = state['language']
             entity = state.get('entity')
@@ -192,7 +195,7 @@ class SummarizeBusinessLogicNode(BaseNode):
             Returns:
                 An updated state dictionary containing the summarized business logic.
             """
-            print("--- SUMMARIZE BUSINES LOGIC 📝👨‍💼 ---")
+            logging.info("--- SUMMARIZE BUSINES LOGIC 📝👨‍💼 ---")
             
             user_query = state['user_query']
             language = state["language"]
@@ -273,7 +276,7 @@ class SummarizeMdlNode(BaseNode):
             Returns:
                 An updated state dictionary containing the summarized data schema.
             """
-            print("--- SUMMARIZE MDL 📝🗂️ ---")
+            logging.info("--- SUMMARIZE MDL 📝🗂️ ---")
             
             user_query = state['user_query']
             language = state['language']
@@ -356,7 +359,7 @@ class GenerateGlobalContextNode(BaseNode):
             Returns:
                 An updated state dictionary containing the generated global context.
             """
-            print("--- GENERATE GLOBAL CONTEXT 📝🌐 ---")
+            logging.info("--- GENERATE GLOBAL CONTEXT 📝🌐 ---")
             
             user_query = state['user_query']
             language = state['language']
@@ -429,7 +432,7 @@ class GenerateNoContextResponseNode(BaseNode):
             Returns:
                 An updated state dictionary containing the no-context message.
             """
-            print("--- GENERATE NO RELEVANT CONTEXT RESPONSE 📝⛔ ---")
+            logging.info("--- GENERATE NO RELEVANT CONTEXT RESPONSE 📝⛔ ---")
             
             user_query = state['user_query']
             language = state['language']
@@ -508,7 +511,7 @@ class GenerateFinalOutputNode(BaseNode):
             Returns:
                 An updated state dictionary containing the no-context message.
             """
-            print("--- 🥁 GENERATE FINAL RESPONSE 🥁 ---")
+            logging.info("--- 🥁 GENERATE FINAL RESPONSE 🥁 ---")
             
             language = state['language']
             relevant_question = state['relevant_question']
@@ -533,7 +536,7 @@ class GenerateFinalOutputNode(BaseNode):
                 fail_motive = 'query_execution_error'
 
             if fail_motive:
-                print(f"--- ❌ FAIL DETECTED: '{fail_motive}' ❌ ---")
+                logging.error(f"--- ❌ FAIL DETECTED: '{fail_motive}' ❌ ---")
                 complementary_instructions = _NL_OUTPUT_GENERATOR_DYNAMIC_PROMPT_DICT[fail_motive]
 
                 nl_output = getattr(

@@ -5,6 +5,9 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Type
 
 from ..agents import BaseAgent, BaseRetrievalAgent
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 
 class BaseNode(ABC):
@@ -239,7 +242,7 @@ class BaseGenerateSubQueriesNode(BaseNode):
                 An updated state dictionary containing the generated sub-queries
                 and updated retrieval iteration count.
             """
-            print(f"--- GENERATING {self.entity_name.upper()} SUB-QUERIES 📚 ---")
+            logging.info(f"--- GENERATING {self.entity_name.upper()} SUB-QUERIES 📚 ---")
             user_query = state['user_query']
             entity = state.get('entity', self.entity_name)
             retieval_iterations = state.get('retieval_iterations', 0)
@@ -320,7 +323,7 @@ class BaseRetrieveToolNode(BaseNode):
         retrieval logic for all subclasses.
         """
         def retrieve_queries_node(state: Dict[str, Any]) -> Dict[str, Any]:
-            print(f"--- {self.entity_name.upper()} RETRIEVE TOOL 🛠️ ---")
+            logging.info(f"--- {self.entity_name.upper()} RETRIEVE TOOL 🛠️ ---")
             queries = state['sub_queries']
             
             retrieval_results = self._tool.invoke({'queries': queries})

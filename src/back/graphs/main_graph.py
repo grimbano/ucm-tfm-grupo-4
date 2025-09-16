@@ -16,6 +16,9 @@ from .context_generator import ContextGeneratorGraph
 from .query_generator import get_query_generator_graph
 from .query_validator import get_query_validator_graph
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 def get_main_graph() -> CompiledStateGraph[Optional[Any]]:
 
@@ -108,6 +111,6 @@ def get_main_graph() -> CompiledStateGraph[Optional[Any]]:
     workflow.add_edge('structure_final_output', END)
 
     compiled_graph = workflow.compile()
-    print(f"--- MAIN GRAPH COMPILED SUCCESSFULLY ✅ ---")
+    logging.info(f"--- MAIN GRAPH COMPILED SUCCESSFULLY ✅ ---")
 
     return compiled_graph

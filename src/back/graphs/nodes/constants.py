@@ -1,6 +1,9 @@
 
 from typing import Any, Callable, Dict, List
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 class SetRetrievalGradeOutputKoNode:
     """
     A class that generates a callable node function to set the output to a
@@ -32,7 +35,7 @@ class SetRetrievalGradeOutputKoNode:
             Returns:
                 A dictionary with the generation message.
             """
-            print("--- SET RETRIEVAL GRADE OUTPUT KO ❌ ---")
+            logging.info("--- SET RETRIEVAL GRADE OUTPUT KO ❌ ---")
             return {
                 'generation': ['[NO RELEVANT CONTENT]']
             }

@@ -4,6 +4,21 @@ Este repositorio contiene el código fuente para el Trabajo de Fin de Máster (T
 
 ---
 
+<div align="center">
+    <img src="./assets/logo-ucm-6.png" alt="Logo UCM" height="50" style="margin: 10px;"/>
+    <img src="./assets/logo_BIAI.png" alt="Logo BIAI" height="50" style="margin: 10px;"/>
+    <img src="./assets/logo-nticmaster-6.png" alt="Logo Ntic Master" height="50" style="margin: 10px;"/>
+</div>
+
+<div align="center">
+  <video controls width="800">
+    <source src="./assets/Ejemplo NL-2-SQL - Corto.mp4" type="video/mp4">
+    Tu navegador no soporta la etiqueta de video.
+  </video>
+</div>
+
+---
+
 ## Requisitos previos
 
 * Antes de instalar el repositorio, se recomienda tener instalado `Git Large File Storage (LFS)`. Dado que trabajaremos con Chroma DB, y que esta base de datos vectorial puede persisitir fichero `*.bin` de más de 100MB (tamaño soportado por git sin requerir LFS). Para instalar esta extensión, simplemente alcanza con ejecutar el siguiente comando
@@ -144,7 +159,7 @@ Una vez que hayas configurado el entorno, puedes utilizar los siguientes comando
 
     ```Bash
     docker compose down -v
-    docker compose up -d
+    docker compose up -d --build
     ```
 
     El comando `docker compose down -v` se asegura de detener y eliminar cualquier instancia anterior y sus volúmenes asociados, mientras que `docker compose up -d` construye y levanta los servicios definidos en el `docker-compose.yml`.
@@ -156,4 +171,5 @@ Una vez que hayas configurado el entorno, puedes utilizar los siguientes comando
     ```Bash
     docker compose logs tfm-postgres-db
     docker compose logs tfm-chroma-db
+    docker compose logs tfm-gradio-app
     ```

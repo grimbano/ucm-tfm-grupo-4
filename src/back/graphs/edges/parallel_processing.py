@@ -4,6 +4,9 @@ from langgraph.graph.state import Send
 
 from .base import BaseEdge
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 class SendToParallelGradingEdge(BaseEdge):
     """
@@ -63,7 +66,7 @@ class SendToParallelGradingEdge(BaseEdge):
             Args:
                 state: The current graph state
             """
-            print("--- PARALLELIZE GENERATION 🔢 ---")
+            logging.info("--- PARALLELIZE GENERATION 🔢 ---")
 
             user_query = state['user_query']
             language = state['language']

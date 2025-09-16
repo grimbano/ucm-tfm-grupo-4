@@ -16,6 +16,10 @@ from .states import QueryValidatorState, QueryValidatorOutputState
 from .pydantic_models import TablesExtractionResult, QueryCoherenceGraderResult
 
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+
 def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Optional[Any]]:
 
     # Nos aseguramos de cargar las variables de entorno
@@ -150,7 +154,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
     # Definimos nodos
 
     def check_db_connection_node(state: QueryValidatorState):
-        print("\n--- INICIANDO COMPROBACIÓN DE CONEXIÓN A BBDD ⚙️ ---")
+        logging.info("--- INICIANDO COMPROBACIÓN DE CONEXIÓN A BBDD ⚙️ ---")
 
         db_name = state['db_name']
         schema_name = state['schema_name']
@@ -163,12 +167,12 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
                 'engine': create_engine(db_uri)
             }
 
-            print("✅ Conexión a la base de datos establecida correctamente.")
+            logging.info("✅ Conexión a la base de datos establecida correctamente.")
 
             return {'db': db}
 
         except Exception as e:
-            print(f"❌ Error al conectar a la base de datos: {e}")
+            logging.error(f"❌ Error al conectar a la base de datos: {e}")
             return {
                 'valid_query_execution': False,
                 'db': None
@@ -176,12 +180,11 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
 
 
     def table_name_extraction_node(state: QueryValidatorState):
-        print("\n--- INICIANDO FASE DE EXTRACCIÓN DE TABLAS CON LLM 🧮 ---")
-
+        logging.info("--- INICIANDO FASE DE EXTRACCIÓN DE TABLAS CON LLM 🧮 ---")
         sql_query = state['sql_query']
-        
+
         table_names = tables_extractor.invoke({'sql_query': sql_query}).table_names
-        print(f"Tablas detectadas por el LLM: {table_names}")
+
         return {"table_names": table_names}
 
 
@@ -194,13 +197,13 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
         retries = state.get('retries', 0) + 1
         
         if retries > max_retries:
-            print(f"\n❌🔚 Límite de {max_retries} reintentos alcanzado. Finalizando.")
+            logging.error(f"❌🔚 Límite de {max_retries} reintentos alcanzado. Finalizando.")
             return {
                 'valid_query_execution': False,
                 "query_validation_error_type": "limit_reached"
             }
 
-        print("\n--- INICIANDO FASE DE JUEZ DE COHERENCIA 👩‍⚖️ ---\n")
+        logging.info("--- INICIANDO FASE DE JUEZ DE COHERENCIA 👩‍⚖️ ---")
 
         coherent = coherence_grader.invoke({
             'user_query': user_query,
@@ -208,16 +211,16 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
             'sql_query': sql_query,
         }).coherent
 
-        print(f"--- Veredicto del juez: {'COHERENTE ✅' if coherent else 'INCOHERENTE ❌'} ---")
+        logging.info(f"--- Veredicto del juez: {'COHERENTE ✅' if coherent else 'INCOHERENTE ❌'} ---")
         
         if not coherent:
-            print("\n❌ La query es incoherente. No se ejecutará en la BBDD.")
+            logging.warning("❌ La query es incoherente. No se ejecutará en la BBDD.")
             return {
                 "query_validation_error_type": "error_coherence", 
                 "retries": retries
             }
         
-        print("\n--- PASANDO A FASE DE EJECUCIÓN EN POSTGRESQL ---\n")
+        logging.info("--- PASANDO A FASE DE EJECUCIÓN EN POSTGRESQL 🐘 ---")
 
         try:
             # Usamos la lista de tablas que nos ha dado el extractor
@@ -228,7 +231,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
                 query_results = [row for row in result.mappings()]
 
             
-            print(f"--- ✅ Query ejecutada correctamente. ---")
+            logging.info(f"--- ✅ Query ejecutada correctamente. ---")
             return {
                 "tables_info": tables_info,
                 "query_results": query_results,
@@ -236,7 +239,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
             }
 
         except Exception as e:
-            print(f"\n❌ Error de PostgreSQL detectado: {e}\n")
+            logging.error(f"❌ Error de PostgreSQL detectado: {e}")
             return {
                 "query_validation_error_type": "error_db",
                 "query_validation_error_msg": e,
@@ -255,10 +258,10 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
         prompt_content = DYNAMIC_PROMPT_CONTENT.get(error_type, 'N/A')
 
         if prompt_content == 'N/A':
-            print("--- ❌ Error no reconocido. Saliendo del corrector. ---")
+            logging.error("--- ❌ Error no reconocido. Saliendo del corrector. ---")
             return {"sql_query": original_sql_query}
         
-        print("\n--- INICIANDO FASE DE CORRECIÓN 📝 ---\n")
+        logging.info("--- INICIANDO FASE DE CORRECIÓN 📝 ---")
         corrected_query = query_corrector.invoke({
             'prompt_content': prompt_content.format(
                 user_query= user_query,
@@ -269,7 +272,7 @@ def get_query_validator_graph(max_retries: int = 5) -> CompiledStateGraph[Option
             )
         }).content
             
-        print(f"✅  > Query corregida recibida: {corrected_query[:70]}...")
+        logging.info(f"✅  > Query corregida recibida: {corrected_query[:70]}...")
         
         return {"sql_query": corrected_query}
     
