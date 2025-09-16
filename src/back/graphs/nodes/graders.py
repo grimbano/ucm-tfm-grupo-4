@@ -7,6 +7,9 @@ from ..agents import (
     GlobalRetrievalGrader
 )
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 
 class GradeBusinessRelevanceNode(BaseNode):
@@ -55,7 +58,7 @@ class GradeBusinessRelevanceNode(BaseNode):
             Returns:
                 An updated state dictionary containing the relevance grading result.
             """
-            print("--- GRADE BUSINESS RELEVANCE 🏢 ---")
+            logging.info("--- GRADE BUSINESS RELEVANCE 🏢 ---")
             
             user_query = state['user_query']
 
@@ -123,7 +126,7 @@ class GradeContextSummariesNode(BaseNode):
             Returns:
                 An updated state dictionary containing the consolidated context summary and the grading result.
             """
-            print("--- GRADE CONTEXT SUMMARIES 🔍 ---")
+            logging.info("--- GRADE CONTEXT SUMMARIES 🔍 ---")
             
             user_query = state['user_query']
             business_logic = state['business_logic']

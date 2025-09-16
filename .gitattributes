@@ -12,6 +12,7 @@
 *.yml text eol=lf
 *.yaml text eol=lf
 .env* text eol=lf
+*Dockerfile* text eol=lf
 *.csv !text !filter !merge !diff
 *.bak !text !filter !merge !diff
 *.bin !text !filter !merge !diff

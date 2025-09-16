@@ -23,6 +23,9 @@ from .states import (
     ContextGeneratorState
 )
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 class ContextGeneratorGraph(BaseGraph):
     """
@@ -224,7 +227,7 @@ class ContextGeneratorGraph(BaseGraph):
         Returns:
             The compiled LangGraph graph ready for execution.
         """
-        print(f"--- BUILDING CONTEXT GENERATOR GRAPH 🏗️ ---")
+        logging.info(f"--- BUILDING CONTEXT GENERATOR GRAPH 🏗️ ---")
 
         workflow = StateGraph(
             state_schema= self.state_schema,
@@ -282,6 +285,6 @@ class ContextGeneratorGraph(BaseGraph):
 
 
         compiled_graph = workflow.compile()
-        print(f"--- CONTEXT GENERATOR COMPILED SUCCESSFULLY ✅ ---")
+        logging.info(f"--- CONTEXT GENERATOR COMPILED SUCCESSFULLY ✅ ---")
 
         return compiled_graph

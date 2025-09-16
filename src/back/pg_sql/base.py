@@ -8,6 +8,9 @@ from psycopg2.extras import RealDictCursor
 from config import get_pg_config
 from src.utils.customs import SqlCommand
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 class BasePostgres:
     """Manages database connections and SQL command execution for a PostgreSQL database.
@@ -49,7 +52,7 @@ class BasePostgres:
             return psycopg2.connect(**connection_params)
         
         except psycopg2.DatabaseError as e:
-            print(f"Database connection error: {e}")
+            logging.error(f"Database connection error: {e}")
             raise
 
 
@@ -82,14 +85,14 @@ class BasePostgres:
                 with connection.cursor() as cursor:
                     for command in commands:
                         cursor.execute(command)
-                        print(f'\nThe following command was executed successfully:\n{command}')
+                        logging.info(f'The following command was executed successfully:\n{command}')
                 connection.commit()
 
         except psycopg2.DatabaseError as e:
             raise e
         
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            logging.error(f"An unexpected error occurred: {e}")
             raise
 
 
@@ -130,7 +133,7 @@ class BasePostgres:
             raise e
         
         except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            logging.error(f"An unexpected error occurred: {e}")
             raise
 
         return query_results

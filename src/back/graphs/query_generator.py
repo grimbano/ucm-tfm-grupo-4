@@ -15,6 +15,9 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 #################### IMPORTS de GASTON -> query_examples_retireval ####################
 
@@ -109,7 +112,7 @@ def get_query_generator_graph(model: str = 'gpt-4.1') -> CompiledStateGraph[Opti
         Args:
             state (dict): The current graph state
         """
-        print("---QUERY EXAMPLES RETRIEVE TOOL---")
+        logging.info("---QUERY EXAMPLES RETRIEVE TOOL---")
 
         query = state['user_query'] 
         lang_raw = state.get("language")
