@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+
+# IDE
+.vscode
+
+# Configuración local / entornos
+.env
+.env.example
+.env.docker.gradio.example
+
+# Bases de datos locales
+*.db
+
+# Notebooks (si no quieres que se copien)
+notebooks/
+
+# Carpeta de datos que no quieres en la imagen
+data/
+
+# Git
+.git*

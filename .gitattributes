@@ -1,0 +1,15 @@
+# Archivos binarios que son demasiado grandes para el repositorio
+# Se usa LFS (Large File Storage) para gestionarlos de forma eficiente
+*.bin filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
+*.bak filter=lfs diff=lfs merge=lfs -text
+
+# ---
+# Gestión de saltos de línea para scripts de Docker
+# Se asegura que los scripts de shell (.sh) utilicen saltos de línea LF para evitar
+# problemas de compatibilidad en entornos Linux (Docker)
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+.env* text eol=lf
+*Dockerfile* text eol=lf
