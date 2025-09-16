@@ -117,6 +117,9 @@ def reset_new_query() -> Dict:
         user_query_input_section: gr.update(visible=True),
         query_results_section: gr.update(visible=False),
         export_options_sb: gr.update(visible=False),
+        file_format_dd: gr.update(value= 'CSV'),
+        dowload_file_column: gr.update(visible= False),
+        download_table_file: gr.update(value= None),
         graphics_tab: gr.update(visible=False),
         sql_tab: gr.update(visible=False),
     }
@@ -317,7 +320,7 @@ with gr.Blocks(
     query_btn.click(
         fn= lambda: gr.update(
             interactive= False,
-            value= 'Consultando ...',
+            value= 'Pensando y consultando ...',
         ),
         outputs= [query_btn]
     ).then(
@@ -364,6 +367,9 @@ with gr.Blocks(
             user_query_input_section,
             query_results_section,
             export_options_sb,
+            file_format_dd,
+            dowload_file_column,
+            download_table_file,
             graphics_tab,
             sql_tab
         ],
@@ -416,6 +422,8 @@ with gr.Blocks(
 if __name__ == "__main__":
     app.queue()
     app.launch(
+        server_name= str(os.getenv('GRADIO_SERVER_NAME', '0.0.0.0')),
+        server_port= int(os.getenv('GRADIO_SERVER_PORT', 7860)),
         favicon_path= './assets/favicon_BIAI.png',
         height= '100%',
         width= '100%',

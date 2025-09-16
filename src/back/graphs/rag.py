@@ -45,6 +45,9 @@ __VALID_CHROMA_COLLECTIONS = (
 
 embedding_function = GenAIExtendedEmbeddingFunction('gemini-embedding-001')
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 class BaseRetrievalGraph(BaseGraph, ABC):
     """
@@ -283,7 +286,7 @@ class BaseRetrievalGraph(BaseGraph, ABC):
         """
         Builds and compiles the LangGraph workflow.
         """
-        print(f"--- BUILDING {self.__class__.__name__.upper()} GRAPH 🏗️ ---")
+        logging.info(f"--- BUILDING {self.__class__.__name__.upper()} GRAPH 🏗️ ---")
 
         workflow = StateGraph(
             state_schema= self.state_schema,
@@ -320,7 +323,7 @@ class BaseRetrievalGraph(BaseGraph, ABC):
         workflow.add_edge(self._SUMMARIZE_STATE, END)
         
         compiled_graph = workflow.compile()
-        print(f"--- {self.__class__.__name__.upper()} COMPILED SUCCESSFULLY ✅ ---")
+        logging.info(f"--- {self.__class__.__name__.upper()} COMPILED SUCCESSFULLY ✅ ---")
 
         return compiled_graph
 

@@ -6,7 +6,7 @@ pg_restore -h localhost -p 5432 -U postgres -Fc -v -d adventure_works_dw C:/pyth
 
 [DOCKER_RUNNING]
 docker compose down -v
-docker compose up -d
+docker compose up -d --build
 docker compose logs tfm-postgres-db
 docker compose logs tfm-chroma-db
 

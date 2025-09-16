@@ -10,6 +10,8 @@ from ..agents import (
     RetrievalGrader
 )
 
+import logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 class GradeRetrievedChunkEdge(BaseAgenticConditionalEdge):
@@ -127,7 +129,7 @@ class GradeRetrievedChunkEdge(BaseAgenticConditionalEdge):
             """
             Determines whether the retrieved document is relevant to the question.
             """
-            print("--- GRADE CHUNK RELEVANCE TO QUESTION ❔ ---")
+            logging.info("--- GRADE CHUNK RELEVANCE TO QUESTION ❔ ---")
             
             user_query: str = state['user_query']
             entity = state.get('entity')
@@ -147,10 +149,10 @@ class GradeRetrievedChunkEdge(BaseAgenticConditionalEdge):
             )
 
             if relevant:
-                print("--- GRADE: RELEVANT CHUNK ✅ ---")
+                logging.info("--- GRADE: RELEVANT CHUNK ✅ ---")
                 return self.is_relevant_next_step
             else:
-                print("--- GRADE: NOT RELEVANT CHUNK 🗑️ ---")
+                logging.info("--- GRADE: NOT RELEVANT CHUNK 🗑️ ---")
                 return self.no_relevance_next_step
         
         return grade_retrieved_chunk
@@ -399,15 +401,15 @@ class GradeChunkSummaryGenerationEdge(BaseEdge):
             """
             Determines the next step based on the generation's quality.
             """
-            print("--- CHECK ITERATIONS 🔁 ---")
+            logging.info("--- CHECK ITERATIONS 🔁 ---")
             generate_iterations = state.get('generate_iterations', 0)
 
             if generate_iterations >= self.max_iterations:
-                print(f"--- DECISION: MAX ITERATIONS REACHED ({generate_iterations}) 🔚 ---")
+                logging.info(f"--- DECISION: MAX ITERATIONS REACHED ({generate_iterations}) 🔚 ---")
                 return self.abort_next_step
 
 
-            print("--- GRADE HALLUCINATIONS 👻 ---")
+            logging.info("--- GRADE HALLUCINATIONS 👻 ---")
             user_query: str = state['user_query']
             entity = state.get('entity')
             chunk_txt = state['chunk_txt']
@@ -422,7 +424,7 @@ class GradeChunkSummaryGenerationEdge(BaseEdge):
             )
 
             if grounded:
-                print("--- DECISION: GENERATION IS GROUNDED IN DOCUMENTS ✅ ---")
+                logging.info("--- DECISION: GENERATION IS GROUNDED IN DOCUMENTS ✅ ---")
 
                 full_user_query = user_query
                 if entity and entity in self.prompt_adjustments:
@@ -443,13 +445,13 @@ class GradeChunkSummaryGenerationEdge(BaseEdge):
                 )
 
                 if addresses:
-                    print("--- DECISION: GENERATION ADDRESSES QUESTION ✅ ---")
+                    logging.info("--- DECISION: GENERATION ADDRESSES QUESTION ✅ ---")
                     return self.end_next_step
 
                 else:
-                    print("--- DECISION: GENERATION DOES NOT ADDRESS QUESTION ❌ ---")
+                    logging.info("--- DECISION: GENERATION DOES NOT ADDRESS QUESTION ❌ ---")
             else:
-                print("--- DECISION: GENERATION IS NOT GROUNDED (HALLUCINATIONS) 👻❌ ---")
+                logging.info("--- DECISION: GENERATION IS NOT GROUNDED (HALLUCINATIONS) 👻❌ ---")
 
             return self.retry_next_step
         

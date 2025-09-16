@@ -1,7 +1,7 @@
 [project]
 name = "ucm-tfm-grupo-4"
 version = "0.1.0"
-description = "Add your description here"
+description = "A NL-2-SQL system."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
