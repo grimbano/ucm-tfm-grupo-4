@@ -1,0 +1,15 @@
+[BACKUP_DUMP_CREATION]
+pg_dump -h localhost -p 5432 -U postgres -F c -b -v -f C:/python/ucm-tfm-grupo-4/data/database/postgres/docker/adventure_works_dw_backup.bak adventure_works_dw
+
+[BACKUP_DUMP_RESTORE]
+pg_restore -h localhost -p 5432 -U postgres -Fc -v -d adventure_works_dw C:/python/ucm-tfm-grupo-4/data/database/postgres/docker/adventure_works_dw_backup.bak
+
+[DOCKER_RUNNING]
+docker compose down -v
+docker compose up -d --build
+docker compose logs tfm-postgres-db
+docker compose logs tfm-chroma-db
+
+[give permission to entrypoint sh]
+dos2unix data/database/postgres/docker/entrypoint.sh
+chmod +x data/database/postgres/docker/entrypoint.sh
