@@ -10,12 +10,7 @@ Este repositorio contiene el código fuente para el Trabajo de Fin de Máster (T
     <img src="./assets/logo-nticmaster-6.png" alt="Logo Ntic Master" height="50" style="margin: 10px;"/>
 </div>
 
-<div align="center">
-  <video controls width="800">
-    <source src="./assets/Ejemplo NL-2-SQL - Corto.mp4" type="video/mp4">
-    Tu navegador no soporta la etiqueta de video.
-  </video>
-</div>
+https://github.com/user-attachments/assets/0b6418ba-3754-41fc-8b07-52ed83f0ba70
 
 ---
 
