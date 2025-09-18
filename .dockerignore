@@ -17,7 +17,8 @@ __pycache__/
 # Bases de datos locales
 *.db
 
-# Notebooks (si no quieres que se copien)
+# Docs y Notebooks
+docs/
 notebooks/
 
 # Carpeta de datos que no quieres en la imagen
