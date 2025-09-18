@@ -1,6 +1,10 @@
-# Máster UCM - TFM Grupo 4
+# Máster UCM - TFM Grupo 4 - Año 2025
 
-Este repositorio contiene el código fuente para el Trabajo de Fin de Máster (TFM) del Grupo 4.
+Este repositorio contiene el código fuente para el Trabajo de Fin de Máster (TFM) del Grupo 4 - Año 2025.
+
+El mismo se trata de la **implementación de un sistema NL2SQL enfoque RAG Multiagente**.
+
+A continuación, puede **acceder a la [Memoria](https://github.com/grimbano/ucm-tfm-grupo-4/blob/0c85b26ba1de01b6b7a53ef7acca844ad8a78f6a/docs/TFM%20-Grupo%204%20-%202025%20-%20Implementaci%C3%B3n%20de%20un%20%20sistema%20NL2SQL%20con%20%20enfoque%20RAG%20Multiagente.pdf)** del mismo.
 
 ---
 
@@ -24,35 +28,120 @@ https://github.com/user-attachments/assets/0b6418ba-3754-41fc-8b07-52ed83f0ba70
 
     En caso de requerir más información sobre esta extensión, puede hacerlo consultando [el siguiente enlace](https://git-lfs.com/).
 
+---
+
 ## Inicialización del Repositorio
 
-Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar en el proyecto:
+Para comenzar a trabajar con el proyecto, clona el repositorio a tu máquina local con el siguiente comando:
 
-1. Clonar el Repositorio
-    Primero, clona el repositorio a tu máquina local usando Git:
+```bash
+git clone https://github.com/grimbano/ucm-tfm-grupo-4.git
+cd ucm-tfm-grupo-4
+```
 
+## Configuración del Entorno y Variables de Acceso 🔑
+
+El proyecto requiere la configuración de variables de entorno para las credenciales de los servicios de IA y las bases de datos. Debes crear dos archivos `.env` a partir de las plantillas provistas.
+
+### 1. Archivos de configuración (`.env`)
+
+Crea copias de las plantillas con los siguientes comandos:
+
+```bash
+cp .env.example .env
+cp .env.docker.gradio.example .env.docker.gradio
+```
+
+### 2. Credenciales y Acceso
+
+Es **IMPRESCINDIBLE** que completes las variables en ambos archivos (.env y .env.docker.gradio) con la información necesaria.
+
+* **Google Cloud Vertex AI:**
+  * Debes tener un archivo Google Application Credentials JSON que facilite el acceso a Vertex AI. Coloca este archivo dentro de la carpeta oculta .secrets/ en la raíz del proyecto.
+  * En ambos archivos .env, asegúrate de que la variable GOOGLE_APPLICATION_CREDENTIALS contenga la ruta y el nombre exactos de tu archivo JSON.
+
+* **Azure AI Foundry:**
+  * Necesitas las claves de acceso de Azure AI Foundry para interactuar con los servicios de Azure OpenAI.
+  * Estas claves deben ser especificadas en ambos archivos .env en las variables correspondientes.
+
+## Modo de Ejecución 🚀
+
+El proyecto está diseñado para ser ejecutado a través de **Docker** para asegurar un entorno de ejecución consistente. No obstante, se detallan los pasos para un entorno de desarrollo local.
+
+### Docker (Modo de ejecución recomendado)
+
+Esta es la forma principal y preferida para probar la herramienta. La ejecución en Docker usa los archivos `docker-compose.yml` y `.env.docker.gradio`.
+
+### Diferencia clave entre `.env` y `.env.docker.gradio`
+
+* El archivo `.env` se utiliza para **desarrollo local** y para montar los servicios de las bases de datos (**Postgres** y **Chroma**).
+* El archivo `.env.docker.gradio` se utiliza exclusivamente para el **servicio de Docker de la aplicación de Gradio**. Este archivo usa los nombres de los servicios (ej. `tfm-postgres-db` en lugar de `localhost`) para que la aplicación de Gradio pueda comunicarse con los otros contenedores.
+
+### Parámetros de Gradio
+
+Los parámetros de la aplicación de Gradio ya están configurados en ambos archivos de ejemplo para **evitar conflictos de puertos**, permitiendo que la aplicación se ejecute simultáneamente en modo local y en Docker si lo deseas.
+
+**Aclaración importante:** Cuando se trabaja con la versión contenerizada de la base de datos, es crucial que la variable de entorno `DB_PORT` del archivo `.env` se establezca en `5433`. Esto se debe a que el contenedor de Docker mapea el puerto interno de PostgreSQL (`5432`) a un puerto diferente en tu máquina host para evitar conflictos con posibles instalaciones locales de PostgreSQL.
+
+### Permisos de ejecución para el script
+
+El script `entrypoint.sh` debe tener los permisos de ejecución correctos para que Docker pueda ejecutarlo. El script se encuentra en la ruta `data/database/postgres/docker/`.
+
+* **Para Linux/macOS:**
+  
     ```bash
-    git clone https://github.com/tu-usuario/ucm-tfm-grupo-4.git
-    cd ucm-tfm-grupo-4
+    dos2unix data/database/postgres/docker/entrypoint.sh
+    chmod +x data/database/postgres/docker/entrypoint.sh
     ```
 
-    Asegúrate de reemplazar `https://github.com/grimbano/ucm-tfm-grupo-4.git` con la URL real de tu repositorio.
+* Para Windows:
+  
+    ```bash
+    dos2unix data/database/postgres/docker/entrypoint.sh
+    ```
 
-2. Actualizar `pip`
+(El comando `chmod` no es necesario en Windows, ya que su sistema de permisos de archivos es diferente).
+
+### Comandos de Docker
+
+1. **Levantar los servicios:**
+    Utiliza el archivo `docker-compose.yml` para levantar los servicios de **PostgreSQL**, **ChromaDB** y la **aplicación de Gradio** en segundo plano.
+
+    ```bash
+    docker compose down -v
+    docker compose up -d --build
+    ```
+
+    El comando `docker compose down -v` detiene y elimina cualquier instancia anterior y sus volúmenes, mientras que `docker compose up -d --build` construye y levanta los servicios definidos en el docker-compose.yml.
+
+2. **Ver el estado de los servicios:**
+    Para verificar que los servicios se están ejecutando, puedes revisar sus logs:
+
+    ```bash
+    docker compose logs tfm-postgres-db
+    docker compose logs tfm-chroma-db
+    docker compose logs tfm-gradio-app
+    ```
+
+## Desarrollo Local (Alternativa)
+
+Para realizar pruebas o trabajar en el código sin usar Docker para la aplicación principal, sigue estos pasos para inicializar el entorno.
+
+1. Actualizar `pip`
     Es una buena práctica asegurarse de que `pip` esté actualizado:
 
     ```bash
     pip install --upgrade pip
     ```
 
-3. Instalar `uv`
+2. Instalar `uv`
     Este proyecto utiliza `uv` para la gestión de dependencias, que es una herramienta moderna y rápida. Instálalo globalmente:
 
     ```bash
     pip install uv
     ```
 
-4. Crear el Entorno Virtual
+3. Crear el Entorno Virtual
     `uv` creará un entorno virtual y lo activará automáticamente en la ubicación por defecto (`.venv`):
 
     ```bash
@@ -65,27 +154,16 @@ Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar
     uv venv /ruta/a/tu/entorno
     ```
 
-5. Sincronizar Dependencias
+4. Sincronizar Dependencias
     Con el entorno virtual activado, sincroniza todas las dependencias del proyecto especificadas en `pyproject.toml` y `uv.lock`:
 
     ```bash
-    uv pip sync pyproject.toml
+    uv sync
     ```
 
     Este comando asegurará que todas las bibliotecas necesarias estén instaladas en tu entorno virtual.
 
-6. Configuración de Variables de Entorno (`.env`)
-    El proyecto utiliza archivos `.env` para gestionar variables de entorno sensibles o específicas del entorno. Encontrarás archivos `*.env.example` en el repositorio que sirven como plantillas.
-
-    Copia los archivos `.env.example` a `.env` y edítalos con tus propias configuraciones:
-
-    ```bash
-    cp .env.example .env
-    ```
-
-    Abre el archivo `.env` recién creado con tu editor de texto preferido y rellena los valores necesarios (por ejemplo, claves API, configuraciones de base de datos, etc.). Nunca subas tus archivos `.env` al control de versiones.
-
-7. Pasos Adicionales
+5. Pasos Adicionales
 
     **¿Cuándo usar `uv add` y `uv lock`?**
 
@@ -105,66 +183,3 @@ Sigue estos pasos para configurar tu entorno de desarrollo y comenzar a trabajar
         ```
 
         `uv lock` garantiza que `uv.lock` sea una representación precisa y reproducible de las dependencias de tu proyecto. Después de ejecutar `uv lock`, asegúrate de confirmar los cambios en `uv.lock` en Git, ya que es crucial para la reproducibilidad del entorno entre desarrolladores.
-
-## Configuración y Ejecución de los Servicios con Docker
-
-Este proyecto utiliza **Docker** y **Docker Compose** para gestionar tanto la base de datos **PostgreSQL** como la base de datos vectorial **ChromaDB**. Esto facilita la configuración de ambos servicios y asegura un entorno de desarrollo consistente.
-
-El archivo `docker-compose.yml`, que se encuentra en la raíz del repositorio, define y configura ambos servicios de manera independiente.
-
----
-
-### Preparación del Entorno
-
-1. **Variables de Entorno (`.env`):**
-    El `docker-compose.yml` utiliza variables de entorno definidas en el archivo `.env` para la configuración de los servicios. Siguiendo los pasos indicados en la sección anterior, copia el archivo de ejemplo a la raíz del repositorio y rellena las variables necesarias.
-
-    **Aclaración importante:** Cuando trabajes con la versión contenerizada de la base de datos, es crucial que la variable de entorno `DB_PORT` en tu archivo `.env` se establezca en `5433`. Esto se debe a que el contenedor de Docker mapea el puerto interno de PostgreSQL (`5432`) a un puerto diferente en tu máquina host para evitar conflictos con posibles instalaciones locales de PostgreSQL.
-
-    `DB_PORT=5433`
-
-2. **Permisos de ejecución para el script:**
-
-    El script `entrypoint.sh` debe tener los permisos de ejecución correctos para que Docker pueda ejecutarlo. El script se encuentra en la ruta `data/database/postgres/docker/`.
-
-    * **Para Linux/macOS:**
-
-        ```Bash
-        dos2unix data/database/postgres/docker/entrypoint.sh
-        chmod +x data/database/postgres/docker/entrypoint.sh
-        ```
-
-    * **Para Windows:**
-
-        ```DOS
-        dos2unix data/database/postgres/docker/entrypoint.sh
-        ```
-
-        (El comando `chmod` no es necesario en Windows, ya que su sistema de permisos de archivos es diferente).
-
----
-
-### Comandos Docker Compose
-
-Una vez que hayas configurado el entorno, puedes utilizar los siguientes comandos para gestionar los servicios de Docker:
-
-1. **Levantar los servicios:**
-
-    Utiliza el archivo `docker-compose.yml` para levantar los servicios de **PostgreSQL** y **ChromaDB** en segundo plano.
-
-    ```Bash
-    docker compose down -v
-    docker compose up -d --build
-    ```
-
-    El comando `docker compose down -v` se asegura de detener y eliminar cualquier instancia anterior y sus volúmenes asociados, mientras que `docker compose up -d` construye y levanta los servicios definidos en el `docker-compose.yml`.
-
-2. **Ver el estado de los servicios:**
-
-    Para verificar que los servicios se están ejecutando correctamente, puedes revisar sus logs.
-
-    ```Bash
-    docker compose logs tfm-postgres-db
-    docker compose logs tfm-chroma-db
-    docker compose logs tfm-gradio-app
-    ```
