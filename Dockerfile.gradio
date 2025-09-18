@@ -23,7 +23,7 @@ COPY . .
 RUN mv .env.docker.gradio .env
 
 # Exponemos el puerto donde correrá Gradio
-EXPOSE ${GRADIO_SERVER_PORT}
+EXPOSE 7860
 
 # Comando por defecto para arrancar la app con uv
 CMD ["uv", "run", "python", "gradio_interface.py"]
