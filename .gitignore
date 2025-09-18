@@ -25,7 +25,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-.secrets/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -207,8 +206,12 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-
 .DS_Store
 
+# Secrets
+.secrets/*
+!.secrets/.gitkeep
+
 # Output Files
-output_files/[^.gitkeep]*
+output_files/*
+!output_files/.gitkeep

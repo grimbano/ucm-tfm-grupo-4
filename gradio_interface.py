@@ -320,7 +320,7 @@ with gr.Blocks(
     query_btn.click(
         fn= lambda: gr.update(
             interactive= False,
-            value= 'Pensando y consultando ...',
+            value= '🧠 Pensando y consultando ...',
         ),
         outputs= [query_btn]
     ).then(
