@@ -109,7 +109,7 @@ El script `entrypoint.sh` debe tener los permisos de ejecución correctos para q
 
     ```bash
     docker compose down -v
-    
+    docker compose up -d --build
     ```
 
     El comando `docker compose down -v` detiene y elimina cualquier instancia anterior y sus volúmenes, mientras que `docker compose up -d --build` construye y levanta los servicios definidos en el docker-compose.yml.
