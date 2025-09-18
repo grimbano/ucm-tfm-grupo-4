@@ -99,19 +99,19 @@ class MainGraphState(TypedDict):
     user_query: str
     n_phrases: int
     language: str
-    relevant_question: bool                             # IMPORTANTE
-    relevant_context: bool                              # IMPORTANTE
+    relevant_question: bool
+    relevant_context: bool
     context: str
     db_name: str
     schema_name: str
-    no_relevant_context_msg: str                        # IMPORTANTE
+    no_relevant_context_msg: str
     sql_query: str
-    valid_query_generated: bool                         # IMPORTANTE
+    valid_query_generated: bool
     table_names: List[str]
     tables_info: List[str]
     query_results: List[Dict[str, Any]]
-    valid_query_execution: bool                         # IMPORTANTE
-    nl_output: str                                      # IMPORTANTE
+    valid_query_execution: bool
+    nl_output: str
     sql_explanation: str
     graphics_json: Optional[str]
     global_execution_ok: bool
