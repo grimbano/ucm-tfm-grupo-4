@@ -215,3 +215,6 @@ __marimo__/
 # Output Files
 output_files/*
 !output_files/.gitkeep
+
+# Heavy Files of Vector Store
+data/embeddings/chroma/
