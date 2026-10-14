@@ -16,8 +16,17 @@ echo ""
 echo "PostgreSQL is responsive. Proceeding with restoration."
 echo ""
 
-echo "Restoring database '${PGDATABASE}' from ${BAK_FILE} ..."
-pg_restore -U "${POSTGRES_USER}" -h /var/run/postgresql -Fc -v -d "${PGDATABASE}" "${BAK_FILE}"
+# Validación según la extensión del archivo
+if [[ "${BAK_FILE}" == *.zip ]]; then
+  echo "Restoring database '${PGDATABASE}' from zip archive ${BAK_FILE} ..."
+  unzip -p "${BAK_FILE}" | pg_restore -U "${POSTGRES_USER}" -h /var/run/postgresql -Fc -v -d "${PGDATABASE}"
+elif [[ "${BAK_FILE}" == *.bak ]]; then
+  echo "Restoring database '${PGDATABASE}' directly from ${BAK_FILE} ..."
+  pg_restore -U "${POSTGRES_USER}" -h /var/run/postgresql -Fc -v -d "${PGDATABASE}" "${BAK_FILE}"
+else
+  echo "Error: ${BAK_FILE} format not supported. Expected .bak or .zip"
+  exit 1
+fi
 
 echo "Restoration completed."
 echo ""
@@ -25,6 +34,5 @@ echo ""
 echo "Deleting 'public' schema if exists in '${PGDATABASE}' ..."
 psql -U "${POSTGRES_USER}" -h /var/run/postgresql -d "${PGDATABASE}" -c "DROP SCHEMA IF EXISTS public;"
 
-echo "Deleation completed."
+echo "Deletion completed."
 echo ""
-
